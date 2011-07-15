@@ -41,15 +41,14 @@ typedef struct
 	GtkWidget *clipboard;
 	GtkWidget *status_icon;
 	GtkWidget *menuitem_properties;
+	GtkWidget *menuitem_about;
 	GtkWidget *scan_label;
+	GtkWidget *about_dialog;
 } Widgets;
 
 
 GtkComboBoxText *cb_source_lang, *cb_dest_lang;
 NotifyNotification *notify_open;
-//GtkClipboard *clipboard;
-//GtkStatusIcon *status_icon;
-//GtkMenuItem *menuitem_properties;
 gchar *translated_text, *summary, *normal_notify_key, *wide_notify_key;
 gchar *favorite_key, *favorite_key_backward, *text_to_trans;
 int lang_src, lang_dst, close_notify, favorite_index, favorite_size, deploy, temp, custom_signal;
@@ -83,12 +82,13 @@ void init_languages (gpointer user_data);
 void load_settings (gpointer user_data);
 void change_favorite (gpointer user_data);
 void change_favorite_back (gpointer user_data);
-void open_properties (gpointer user_data);
+void open_properties (GtkMenuItem *menuitem, gpointer user_data);
 int compare_ints (const void *a, const void *b);
 void destroy_window (GtkWidget *object, gpointer user_data); 
 void show_window (GtkStatusIcon *status_icon, GdkEvent *event, gpointer user_data);
 void get_size_position (GObject *gobject, GParamSpec *pspec, gpointer user_data);
 void get_focus_widget (GtkWidget *widget, GdkEvent *event, gpointer user_data);
+void open_about_dialog (GtkMenuItem *menuitem, gpointer user_data);
 
 int main (int argc, char *argv[])
 {
@@ -127,6 +127,7 @@ int main (int argc, char *argv[])
 	}
 
 	widgets->menuitem_properties = gtk_builder_get_object (builder, "menuitem_properties");
+	widgets->menuitem_about = gtk_builder_get_object (builder, "menuitem_about");
 	cb_source_lang = gtk_builder_get_object (builder, "sourcelang_button");
 	cb_dest_lang = gtk_builder_get_object (builder, "destlang_button");
 	widgets->swap_button = gtk_builder_get_object (builder, "swap_button");
@@ -138,12 +139,11 @@ int main (int argc, char *argv[])
 	buffer_dest = gtk_text_view_get_buffer (GTK_TEXT_VIEW (widgets->dest));
 	widgets->clipboard = gtk_clipboard_get (GDK_SELECTION_PRIMARY);
 	widgets->scan_label = gtk_builder_get_object (builder, "scan_label");
+	widgets->about_dialog = gtk_builder_get_object (builder, "about_dialog");
 	
 	notify_init("GSTranslator");
 	notify_open = notify_notification_new ("", "", NULL);
 
-	//gtk_text_buffer_remove_selection_clipboard (buffer_dest, clipboard);
-	
 	//widgets->status_icon = gtk_status_icon_new ();
 	//g_signal_connect (widgets->status_icon, "button_press_event", G_CALLBACK (show_window), widgets);
 	gtk_window_set_icon(widgets->window, pixbuffer);
@@ -152,15 +152,14 @@ int main (int argc, char *argv[])
 	init_languages (widgets);
 
 	g_signal_connect (widgets->window, "destroy", G_CALLBACK (destroy_window), widgets);
-	g_signal_connect (widgets->menuitem_properties, "activate", G_CALLBACK (open_properties), NULL);
-	
+	g_signal_connect (widgets->menuitem_properties, "activate", G_CALLBACK (open_properties), widgets);
+	g_signal_connect (widgets->menuitem_about, "activate", G_CALLBACK (open_about_dialog), widgets);
 	g_signal_connect (cb_source_lang, "changed", G_CALLBACK (change_src_lang), widgets);
 	g_signal_connect (cb_dest_lang, "changed", G_CALLBACK (change_dst_lang), widgets);
 	g_signal_connect (widgets->src, "key_press_event", G_CALLBACK (on_key_press), widgets);
 	g_signal_connect (widgets->translate_button, "clicked", G_CALLBACK (translate_from_textview), widgets);
 	g_signal_connect (widgets->src, "key_release_event", G_CALLBACK (clean_src_textview), widgets);
 
-	//g_signal_connect (widgets->window, "notify", G_CALLBACK (window_get_focus), widgets);
 	g_signal_connect (widgets->window, "delete-event", G_CALLBACK (get_size_position), widgets);
 	g_signal_connect (widgets->src, "focus-in-event", G_CALLBACK (window_get_focus), widgets);
 	g_signal_connect (widgets->dest, "focus-in-event", G_CALLBACK (get_focus_widget), widgets);
@@ -727,8 +726,9 @@ void change_favorite_back (gpointer user_data)
 }
 
 
-void open_properties (gpointer user_data)
+void open_properties (GtkMenuItem *menuitem, gpointer user_data)
 {
+	Widgets *widgets = (Widgets*)user_data;
 	if(create_properties_window(conf_file, deploy, &dictionaries))
 	{
 		load_settings (user_data);
@@ -778,4 +778,21 @@ void get_focus_widget (GtkWidget *widget, GdkEvent *event, gpointer user_data)
 	}
 	
 }
-	
+
+
+void open_about_dialog (GtkMenuItem *menuitem, gpointer user_data)
+{
+	Widgets *widgets = (Widgets*)user_data;
+	GdkPixbuf *pixbuffer;
+	if(deploy)
+	{
+		pixbuffer = gdk_pixbuf_new_from_file(PACKAGE_DATA_DIR"/gstranslator/icon/hi64-app-translator.png",
+		                                     NULL);
+	}
+	else
+	{
+		pixbuffer = gdk_pixbuf_new_from_file("src/icon/hi64-app-translator.png", NULL);
+	}
+	gtk_about_dialog_set_logo (widgets->about_dialog, pixbuffer);
+	gtk_widget_show (widgets->about_dialog);
+}

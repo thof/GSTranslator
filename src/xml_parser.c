@@ -182,7 +182,7 @@ void save_size_position (const char* filename, int *w_width, int *w_height,
 	xmlXPathObjectPtr xpathObj;
 	char temp_val[16];
 
-	g_print ("\nSave %d %d %d %d", *w_width, *w_height, *w_x, *w_y);
+	//g_print ("\nSave %d %d %d %d", *w_width, *w_height, *w_x, *w_y);
 	
 	xmlKeepBlanksDefault(0);
 	doc = xmlParseFile(filename);

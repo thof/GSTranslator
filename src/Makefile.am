@@ -11,7 +11,8 @@ SUBDIRS = \
 
 uidir = $(datadir)/gstranslator/ui
 ui_DATA = gstranslator.ui \
-	properties.ui
+	properties.ui \
+	about_dialog.ui
 
 
 AM_CPPFLAGS = \

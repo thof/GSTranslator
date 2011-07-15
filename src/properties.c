@@ -79,12 +79,7 @@ int create_properties_window(char *conf_file_xml, int deploy, language *dictiona
 		strcpy (dicts[i].name, dictionaries->name);
 		dictionaries++;
 	}
-	for (i=0; i<size_lang; i++)
-	{
-		g_print("\n%s", dicts[i].name);
-	}
 	strcpy(conf_file, conf_file_xml);
-	g_print(conf_file);
 	builder = gtk_builder_new ();
 	if(deploy)
 	{
@@ -416,13 +411,12 @@ void save_config ()
 				gtk_tree_model_get_value (store, &f_iter, 0, &f_value);
 				if(strcmp(g_value_get_string (&f_value), g_value_get_string (&h_value)) == 0)
 				{
-					g_print("Fav list and hidden list contain at least one the same element");
 					dialog = gtk_message_dialog_new (window,
 					                                 GTK_DIALOG_MODAL,
 					                                 GTK_MESSAGE_ERROR,
 					                                 GTK_BUTTONS_CLOSE,
 					                                 "Both lists contain at least one the same element");
-					gtk_message_dialog_format_secondary_text (dialog, "%s needs to be fixed", g_value_get_string (&h_value));
+					gtk_message_dialog_format_secondary_text (dialog, "Element \"%s\" needs to be fixed", g_value_get_string (&h_value));
 					gtk_dialog_run (GTK_DIALOG (dialog));
 					gtk_widget_destroy (dialog);
 					g_value_unset(&f_value);
@@ -434,13 +428,12 @@ void save_config ()
 				gtk_tree_model_get_value (store, &f_iter, 1, &f_value);
 				if(strcmp(g_value_get_string (&f_value), g_value_get_string (&h_value)) == 0)
 				{
-					g_print("Fav list and hidden list contain at least one the same element");
 					dialog = gtk_message_dialog_new (window,
 					                                 GTK_DIALOG_MODAL,
 					                                 GTK_MESSAGE_ERROR,
 					                                 GTK_BUTTONS_CLOSE,
 					                                 "Both lists contain at least one the same element");
-					gtk_message_dialog_format_secondary_text (dialog, "%s needs to be fixed", g_value_get_string (&h_value));
+					gtk_message_dialog_format_secondary_text (dialog, "Element \"%s\" needs to be fixed", g_value_get_string (&h_value));
 					gtk_dialog_run (GTK_DIALOG (dialog));
 					gtk_widget_destroy (dialog);
 					g_value_unset(&f_value);
@@ -493,7 +486,7 @@ void save_config ()
 		{
 			break;
 		}
-		g_print("\n%d %d", favorite[i].src_code, favorite[i].dst_code);
+		//g_print("\n%d %d", favorite[i].src_code, favorite[i].dst_code);
 	}
 
 	if(gtk_tree_model_get_iter_first (store_hidden, &h_iter))
@@ -523,7 +516,7 @@ void save_config ()
 		{
 			break;
 		}
-		g_print("\n%d", h_dict[i].code);
+		//g_print("\n%d", h_dict[i].code);
 	}
 
 	strcpy (shortcut[0].name, gtk_entry_get_text (entry_sn));

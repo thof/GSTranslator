@@ -96,10 +96,9 @@ char *clean_output (char *string, char *pattern, size_t len)
 		j = p-temp;
 		strncat (string_new, temp, j);
 		temp = p+length_p;
-		g_print ("\n%s", string_new);
 	}
 	strcat (string_new, temp);
-	g_print ("\n%s", string_new);
+	//g_print ("\n%s", string_new);
 	return string_new;
 }
 
@@ -141,7 +140,7 @@ char *getTranslation(char *text_to_trans, char *lang_src_str, char *lang_dst_str
 
 	snprintf (full_text_to_trans, 4096, "client=json&sl=%s&tl=%s&text=%s", lang_src_str, lang_dst_str, encoded);
 	curl_free(encoded);
-	g_print("%s?%s", site_url, full_text_to_trans);
+	//g_print("%s?%s", site_url, full_text_to_trans);
 
 	struct curl_slist *headers=NULL;
   	headers = curl_slist_append(headers, "Content-Type: application/x-www-form-urlencoded");
@@ -217,7 +216,7 @@ char *getSJP(char *text_to_trans)
 	encoded = curl_easy_escape(curl_handle, text_to_trans, strlen(text_to_trans));
 	snprintf (full_text_to_trans, 1024, "http://sjp.pwn.pl/szukaj/%s", encoded);
 	curl_free(encoded);
-	g_print("%s", full_text_to_trans);
+	//g_print("%s", full_text_to_trans);
 
 	struct curl_slist *headers=NULL;
   	headers = curl_slist_append(headers, "Content-Type: application/x-www-form-urlencoded");
@@ -255,17 +254,14 @@ char *getSJP(char *text_to_trans)
 			char trans3[pos+pos/4];
 			strncpy (trans3, trans1+20, pos);
 			trans3[pos] = '\0';
-			g_print ("\n%s", trans3);
 			strcpy(trans3, g_convert (trans3, -1, "UTF-8", "ISO-8859-2", NULL, NULL, NULL));
 			trans_buffer[0] = '\0';
-			g_print ("\n%s", trans3);
 
 			int new_line_cond = 0;
 			int semicolon_cond = 0;
 			char *pch = strtok (trans3,";");
 			while (pch != NULL)
 			{
-				g_print ("\n%s", pch);
 				if(strstr(pch, "<a href") != NULL)
 				{
 					if(new_line_cond)
@@ -279,7 +275,7 @@ char *getSJP(char *text_to_trans)
 					pos2 = pch3-pch1-pos1;	
 					strncat (trans_buffer, pch1+pos1, pos2);
 					strcat (trans_buffer, "\n");
-					g_print("\n%s\n", trans_buffer);
+					//g_print("\n%s\n", trans_buffer);
 					new_line_cond = 1;
 					semicolon_cond = 1;
 				}
@@ -289,7 +285,7 @@ char *getSJP(char *text_to_trans)
 					strcat (trans_buffer, "- ");
 					strncat (trans_buffer, pch, pos3);
 					strcat (trans_buffer, "\n");
-					g_print("\n%s\n", trans_buffer);
+					//g_print("\n%s\n", trans_buffer);
 				}
 				if(strstr(pch, "&#8226") != NULL)
 				{
@@ -303,7 +299,7 @@ char *getSJP(char *text_to_trans)
 					strcat (trans_buffer, "- ");
 					strcat (trans_buffer, pch);
 					strcat (trans_buffer, "\n");
-					g_print("\n%s\n", trans_buffer);
+					//g_print("\n%s\n", trans_buffer);
 				}
 				pch = strtok (NULL, ";");
 			}
@@ -342,7 +338,7 @@ char *getOneLook(char *text_to_trans)
 
 	snprintf (full_text_to_trans, 1024, "http://www.onelook.com/?xml=1&w=%s", encoded);
 	curl_free(encoded);
-	g_print("%s", full_text_to_trans);
+	//g_print("%s", full_text_to_trans);
 
 	struct curl_slist *headers=NULL;
   	headers = curl_slist_append(headers, "Content-Type: application/x-www-form-urlencoded");
@@ -390,7 +386,7 @@ char *getOneLook(char *text_to_trans)
 				strcpy(trans_buffer, clean_output (&trans_buffer, "&lt;/i&gt;", strlen(trans_buffer)));
 			}
 			xmlCleanupParser();
-			g_print (trans_buffer);
+			//g_print (trans_buffer);
 		}	
 		else
 		{
