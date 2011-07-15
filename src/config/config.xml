@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+
+	<normal_notify_hotkey>&lt;Ctrl&gt;0</normal_notify_hotkey>
+	<wide_notify_hotkey>&lt;Ctrl&gt;9</wide_notify_hotkey>
+	<favorite_hotkey>&lt;Ctrl&gt;8</favorite_hotkey>
+
+	<favorite>
+		<src_lang>0</src_lang>
+		<dst_lang>1</dst_lang>
+	</favorite>
+	<favorite>
+		<src_lang>1</src_lang>
+		<dst_lang>0</dst_lang>
+	</favorite>
+	<favorite>
+		<src_lang>2</src_lang>
+		<dst_lang>2</dst_lang>
+	</favorite>
+	<favorite>
+		<src_lang>3</src_lang>
+		<dst_lang>3</dst_lang>
+	</favorite>
+</config>
