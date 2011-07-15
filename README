@@ -1,1 +1,11 @@
 GSTranslator is simple translator for Gnome 3.
+
+Translations are provided using several dictionaries/translators like:
+- Google Translate (support most languages),
+- OneLook Dictionary,
+- SJP (Polish Dictionary).
+
+GSTranslator works in two modes:
+1. Normal window which acts similarly to other regular translators.
+2. In the second mode it uses new notification mechanism introduced to Gnome 3. This is a convenient way to get translations of 
+currently selected text. Notification with translation appeared in response to a hotkey calling corresponding event.
