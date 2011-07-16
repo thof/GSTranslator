@@ -344,14 +344,30 @@ void translate_from_clipboard(const char *received_text)
 		char *result_trans = getSJP(recent_clip);
 		size_t summary_length = strcspn (result_trans, "\n");
 		summary = strndup (result_trans, summary_length);
-		translated_text = strdup (result_trans+summary_length+1);
+		//translated_text = strdup (result_trans+summary_length+1);
+		if(strcmp(result_trans, summary)==0)
+		{
+			translated_text = '\0';
+		}
+		else
+		{
+			translated_text = strdup (result_trans+summary_length+1);
+		}
 	}
 	else if(strcmp(dictionaries[lang_dst].code, "onelook")==0)
 	{
 		char *result_trans = getOneLook(recent_clip);
 		size_t summary_length = strcspn (result_trans, "\n");
 		summary = strndup (result_trans, summary_length);
-		translated_text = strdup (result_trans+summary_length+1);
+		//translated_text = strdup (result_trans+summary_length+1);
+		if(strcmp(result_trans, summary)==0)
+		{
+			translated_text = '\0';
+		}
+		else
+		{
+			translated_text = strdup (result_trans+summary_length+1);
+		}
 	}
 	else
 	{
@@ -379,7 +395,7 @@ void translate_from_clipboard(const char *received_text)
 		size_t num = 700;
 		strncpy(temp_result, translated_text, num);
 		temp_result[num] = '\0';
-		strcat(temp_result, "... Read more\0");
+		strcat(temp_result, "... Click to read more\0");
 		g_free (translated_text);
 		translated_text = strdup (temp_result);
 	}

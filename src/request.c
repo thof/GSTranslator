@@ -238,14 +238,13 @@ char *getSJP(char *text_to_trans)
 
 	// cleanup curl stuff
 	curl_easy_cleanup(curl_handle);
-	//g_print("\n%s\n", body.ptr);
 
 	if(body.len)
 	{
 		size_t pos;
 		char *pch1, *pch2, *pch3;
 		size_t pos1, pos2, pos3;
-		char trans_buffer[4096];
+		char trans_buffer[body.len];
 		char *trans1 = strstr(body.ptr, "<!-- listahasel -->");
 		if(trans1 != NULL)
 		{
@@ -272,8 +271,12 @@ char *getSJP(char *text_to_trans)
 					pch2 = strchr(pch1, '>');
 					pch3 = strchr(pch1, '<');
 					pos1 = pch2-pch1+1;
-					pos2 = pch3-pch1-pos1;	
-					strncat (trans_buffer, pch1+pos1, pos2);
+					pos2 = pch3-pch1-pos1;
+					//g_print ("\n%d %d", pos1, pos2);
+					if(pos2 != -1)
+					{
+						strncat (trans_buffer, pch1+pos1, pos2);
+					}
 					strcat (trans_buffer, "\n");
 					//g_print("\n%s\n", trans_buffer);
 					new_line_cond = 1;
@@ -430,6 +433,14 @@ char *parse_translation(gchar *json_out){
 	JsonReader *reader = json_reader_new (json_parser_get_root (parser));
 
 	json_reader_read_member (reader, "sentences"); //1
+
+	if (json_reader_count_elements (reader)<1)
+	{
+		g_object_unref (parser);
+		gchar out[] = "Not found\0";
+		result = strdup(out);
+		return result;	
+	}
 
 	if(json_reader_count_elements (reader)>1)
 	{
