@@ -90,6 +90,7 @@ void get_size_position (GObject *gobject, GParamSpec *pspec, gpointer user_data)
 void get_focus_widget (GtkWidget *widget, GdkEvent *event, gpointer user_data);
 void open_about_dialog (GtkMenuItem *menuitem, gpointer user_data);
 
+
 int main (int argc, char *argv[])
 {
 	GtkBuilder *builder;
@@ -159,7 +160,7 @@ int main (int argc, char *argv[])
 	g_signal_connect (widgets->src, "key_press_event", G_CALLBACK (on_key_press), widgets);
 	g_signal_connect (widgets->translate_button, "clicked", G_CALLBACK (translate_from_textview), widgets);
 	g_signal_connect (widgets->src, "key_release_event", G_CALLBACK (clean_src_textview), widgets);
-
+	
 	g_signal_connect (widgets->window, "delete-event", G_CALLBACK (get_size_position), widgets);
 	g_signal_connect (widgets->src, "focus-in-event", G_CALLBACK (window_get_focus), widgets);
 	g_signal_connect (widgets->dest, "focus-in-event", G_CALLBACK (get_focus_widget), widgets);
@@ -172,6 +173,7 @@ int main (int argc, char *argv[])
 
 	return 0;
 }
+
 
 void window_get_focus(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
@@ -361,7 +363,7 @@ void translate_from_clipboard(const char *received_text)
 		//g_print("\n%s", result_trans);
 		
 		size_t summary_length = strcspn (result_trans, "\n");
-		summary = strndup (result_trans, summary_length);		
+		summary = strndup (result_trans, summary_length);	
 		if(strcmp(result_trans, summary)==0)
 		{
 			translated_text = '\0';
@@ -370,6 +372,16 @@ void translate_from_clipboard(const char *received_text)
 		{
 			translated_text = strdup (result_trans+summary_length+2);
 		}
+	}
+	if(translated_text != NULL && strlen(translated_text)>700)
+	{
+		gchar temp_result[750];
+		size_t num = 700;
+		strncpy(temp_result, translated_text, num);
+		temp_result[num] = '\0';
+		strcat(temp_result, "... Read more\0");
+		g_free (translated_text);
+		translated_text = strdup (temp_result);
 	}
 }
 
@@ -582,7 +594,7 @@ void load_settings (gpointer user_data)
 	keybinder_bind (normal_notify_key, normal_notify_handler, user_data);
 	keybinder_bind (wide_notify_key, wide_notify_handler, user_data);
 	keybinder_bind (favorite_key, change_favorite, user_data);
-	keybinder_bind (favorite_key_backward, change_favorite, user_data);
+	keybinder_bind (favorite_key_backward, change_favorite_back, user_data);
 	
 	favorite_size = get_xpath_nodes_size (conf_file, "//favorite", NULL);
 	for(i=0; i<favorite_size; i++)
