@@ -138,7 +138,7 @@ char *getTranslation(char *text_to_trans, char *lang_src_str, char *lang_dst_str
 	
 	encoded = curl_easy_escape(curl_handle, text_to_trans, strlen(text_to_trans));
 
-	snprintf (full_text_to_trans, 4096, "client=json&sl=%s&tl=%s&text=%s", lang_src_str, lang_dst_str, encoded);
+	snprintf (full_text_to_trans, 4096, "client=json&sl=%s&tl=%s&hl=%s&text=%s", lang_src_str, lang_dst_str,lang_dst_str, encoded);
 	curl_free(encoded);
 	//g_print("%s?%s", site_url, full_text_to_trans);
 
