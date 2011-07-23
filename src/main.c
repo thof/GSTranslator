@@ -99,7 +99,7 @@ int main (int argc, char *argv[])
 	GtkTextBuffer *buffer_src, *buffer_dest;
 	GdkPixbuf *pixbuffer;
 	
-	deploy = 0;
+	deploy = 1;
 	gtk_init (&argc, &argv);
 	recent_clip[0] = '\0';
 	close_notify = 1;

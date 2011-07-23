@@ -1,5 +1,8 @@
-GSTranslator is simple translator for Gnome 3.
+GSTranslator 0.2a1 - is a simple translator for Gnome 3.
+==================
 
+DESCRIPTION
+============
 Translations are provided using several dictionaries/translators like:
 - Google Translate (almost all languages are supported, although I tested only a few European languages),
 - OneLook Dictionary,
@@ -9,14 +12,38 @@ GSTranslator works in two modes:
 1. Normal window which acts similarly to other regular translators.
 2. In the second mode it uses new notification mechanism introduced to Gnome 3. This is a convenient way to get translations of currently selected text. Notification with translation appear in response to a hotkey calling corresponding event.
 
-FAQ:
 
+COMMAND LINE OPTIONS
+====================
+  -d, --daemon
+        Runs in the background
+
+DEPENDENCIES
+============
+- glibc
+- gtk3
+- json-glib
+- keybinder-3.0 (NOTE: it has to be version 3.0 for gtk3)
+- libnotify
+- libxml2
+- curl
+
+INSTALLATION
+============
+To install GSTranslator in /usr/bin:
+$ ./configure --prefix=/usr
+$ make
+# make install
+
+
+FAQ
+===
 Q1. You said that GSTranslator support almost all languages, but I can't find my native language?
 A1. By default, most of them are hidden. First of all check Properties (Edit -> Properties) and delete it from second list.
 
-Q2. I would like to set a keyboard shorcut Ctrl+Shift+8 to switch favorites, but entry <Ctrl><Shift>8 doesn't work. Why?
+Q2. I would like to set a keyboard shortcut Ctrl+Shift+8 to switch favorites, but entry <Ctrl><Shift>8 doesn't work. Why?
 A2. GSTranslator doesn't come with user-friendly wrapper to keybinder library. You have to know that Left Alt and both Ctrl behave differently than Right Alt or Shift.
-"Ctrl + 8" gives us combination, but "Shift + 8" results in new symbol "asterisk". So appropriate combination wil be <Ctrl>asterisk.
+"Ctrl + 8" gives us combination, but "Shift + 8" results in new symbol "asterisk". So appropriate combination will be <Ctrl>asterisk.
 Using xev is the easiest way to get specified symbol:
 [code]
 $ xev | grep -A2 --line-buffered '^KeyRelease' | sed -n '/keycode /s/^.*keycode \([0-9]*\).* (.*, \(.*\)).*$/\1 \2/p'
