@@ -35,6 +35,10 @@ $ ./configure --prefix=/usr
 $ make
 # make install
 
+DISTRIBUTIONS
+=============
+Arch (AUR) - yaourt -S gstranslator
+
 
 FAQ
 ===
@@ -48,3 +52,7 @@ Using xev is the easiest way to get specified symbol:
 [code]
 $ xev | grep -A2 --line-buffered '^KeyRelease' | sed -n '/keycode /s/^.*keycode \([0-9]*\).* (.*, \(.*\)).*$/\1 \2/p'
 [/code]
+
+VIDEO PRESENTATION
+==================
+http://www.youtube.com/watch?v=XPAD5hQo7Lo
