@@ -480,14 +480,14 @@ void save_config ()
 		while(gtk_tree_model_iter_next (store, &f_iter));
 	}
 
-	for(i=0; i<20; i++)
+	/*for(i=0; i<20; i++)
 	{
 		if(favorite[i].src_code == NULL)
 		{
 			break;
 		}
 		//g_print("\n%d %d", favorite[i].src_code, favorite[i].dst_code);
-	}
+	}*/
 
 	if(gtk_tree_model_get_iter_first (store_hidden, &h_iter))
 	{
@@ -510,14 +510,14 @@ void save_config ()
 		while(gtk_tree_model_iter_next (store_hidden, &h_iter));
 	}
 
-	for(i=0; i<60; i++)
+	/*for(i=0; i<60; i++)
 	{
 		if(h_dict[i].code == NULL)
 		{
 			break;
 		}
 		//g_print("\n%d", h_dict[i].code);
-	}
+	}*/
 
 	strcpy (shortcut[0].name, gtk_entry_get_text (entry_sn));
 	strcpy (shortcut[1].name, gtk_entry_get_text (entry_wn));

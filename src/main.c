@@ -49,6 +49,7 @@ typedef struct
 
 GtkComboBoxText *cb_source_lang, *cb_dest_lang;
 NotifyNotification *notify_open;
+NotifyNotification *notify_test;
 gchar *translated_text, *summary, *normal_notify_key, *wide_notify_key;
 gchar *favorite_key, *favorite_key_backward, *text_to_trans;
 int lang_src, lang_dst, close_notify, favorite_index, favorite_size, deploy, temp, custom_signal;
@@ -98,7 +99,7 @@ int main (int argc, char *argv[])
 	GtkTextBuffer *buffer_src, *buffer_dest;
 	GdkPixbuf *pixbuffer;
 	
-	deploy=0;
+	deploy = 0;
 	gtk_init (&argc, &argv);
 	recent_clip[0] = '\0';
 	close_notify = 1;
@@ -151,6 +152,7 @@ int main (int argc, char *argv[])
 	keybinder_init ();
 	init_config (widgets);
 	init_languages (widgets);
+	
 
 	g_signal_connect (widgets->window, "destroy", G_CALLBACK (destroy_window), widgets);
 	g_signal_connect (widgets->menuitem_properties, "activate", G_CALLBACK (open_properties), widgets);
@@ -486,7 +488,7 @@ void init_config (gpointer user_data)
 	strcat(conf_dir, "/.config/gstranslator\0");
 	strcpy(conf_file, conf_dir);
 	strcat(conf_file, "/config.xml\0");
-	
+
 	if(access(conf_dir, R_OK)!=0)
 	{
 		char ch;
@@ -674,6 +676,7 @@ void change_favorite (gpointer user_data)
 	char message[128];
 	char icon_file[256];
 	Widgets *widgets = (Widgets*)user_data;
+	GError *err = NULL;
 
 	favorite_index++;
 	if(!(favorite_index<favorite_size))
@@ -688,14 +691,20 @@ void change_favorite (gpointer user_data)
 	if(deploy)
 	{
 		sprintf (icon_file, "%s/gstranslator/kbflags/%s", PACKAGE_DATA_DIR, dictionaries[lang_dst].flag);
-		pixbuffer = gdk_pixbuf_new_from_file(icon_file, NULL);
+		pixbuffer = gdk_pixbuf_new_from_file(icon_file, err);
 	}
 	else
 	{
 		sprintf (icon_file, "src/kbflags/%s", dictionaries[lang_dst].flag);
-		pixbuffer = gdk_pixbuf_new_from_file(icon_file, NULL);
+		pixbuffer = gdk_pixbuf_new_from_file(icon_file, err);
+	}
+	if (err != NULL)
+	{
+		g_print (stderr, "Unable to read file: %s\n", err->message);
+		g_error_free (err);
 	}
 	notify_notification_set_image_from_pixbuf(notify_open, pixbuffer);
+	
 	if(!close_notify)
 	{
 		notify_notification_close (notify_open, NULL);
@@ -738,6 +747,7 @@ void change_favorite_back (gpointer user_data)
 		sprintf (icon_file, "src/kbflags/%s", dictionaries[lang_dst].flag);
 		pixbuffer = gdk_pixbuf_new_from_file(icon_file, NULL);
 	}
+
 	notify_notification_set_image_from_pixbuf(notify_open, pixbuffer);
 	if(!close_notify)
 	{
