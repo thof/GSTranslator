@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
-  <default_width>300</default_width>
-  <default_height>300</default_height>
+  <default_width>240</default_width>
+  <default_height>270</default_height>
   <default_x>0</default_x>
-  <default_y>0</default_y>
+  <default_y>30</default_y>
   <normal_notify_hotkey>&lt;Ctrl&gt;0</normal_notify_hotkey>
   <wide_notify_hotkey>&lt;Ctrl&gt;9</wide_notify_hotkey>
   <favorite_hotkey>&lt;Ctrl&gt;8</favorite_hotkey>
-  <favorite_hotkey_back>&lt;Ctrl&gt;&lt;Alt&gt;8</favorite_hotkey_back>
+  <favorite_hotkey_back>&lt;Ctrl&gt;asterisk</favorite_hotkey_back>
   <favorite>
     <src_lang>16</src_lang>
     <dst_lang>43</dst_lang>
