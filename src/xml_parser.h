@@ -28,9 +28,11 @@
 #define HEADER_XML
 void save_config_file (const char* filename, shortcuts * shortcut,
                        favorites * favorite, hidden_dicts * h_dict);
+void save_languages_to_xml (language * languages, int size);
 void save_size_position (const char* filename, int *w_width, int *w_height, 
                          int *w_x, int *w_y);
 void add_favorite_node (const char* filename, const xmlChar* xpathExpr);
+void load_languages_from_xml (char *filename, language * dictionaries, int sizeof_dicts);
 char *execute_xpath_expression (const char* filename, const xmlChar* xpathExpr,
                                 const xmlChar* nsList, int size);
 char *print_xpath_nodes (xmlNodeSetPtr nodes);

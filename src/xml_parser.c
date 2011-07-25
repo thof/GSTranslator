@@ -164,12 +164,39 @@ void save_config_file (const char* filename, shortcuts * shortcut,
 		parent = xmlNewChild (xpathObj->nodesetval->nodeTab[0], NULL, "hidden", temp_val);
 		h_dict++;
 	}
-	while(h_dict->code != NULL);                                  
+	while(h_dict->code != NULL);
 	xmlXPathFreeObject(xpathObj);
 
 	xmlXPathFreeContext(xpathCtx);
 	xmlSaveFormatFile (filename, doc, 1);
 	//xmlDocDump(stdout, doc);
+	xmlFreeDoc(doc);
+}
+
+void save_languages_to_xml (language * languages, int size)
+{
+	xmlDocPtr doc;
+	xmlNodePtr parent, child;
+	xmlXPathContextPtr xpathCtx;
+	xmlXPathObjectPtr xpathObj;
+	int i;
+	
+	xmlKeepBlanksDefault(0);
+	doc = xmlNewDoc (BAD_CAST "1.0");
+
+	parent = xmlNewNode(NULL, "languages");
+	xmlDocSetRootElement(doc, parent);
+
+	for(i=0; i<size; i++)
+	{
+		child = xmlNewChild (parent, NULL, "lang", NULL);
+		xmlNewChild (child, NULL, "name", languages->name);
+		xmlNewChild (child, NULL, "code", languages->code);
+		xmlNewChild (child, NULL, "flag", languages->flag);
+		languages++;
+	}
+
+	xmlSaveFormatFile ("src/config/languages.xml", doc, 1);
 	xmlFreeDoc(doc);
 }
 
@@ -248,6 +275,53 @@ void save_size_position (const char* filename, int *w_width, int *w_height,
 	xmlFreeDoc(doc);
 }
 
+void load_languages_from_xml (char *filename, language * dictionaries, int sizeof_dicts)
+{
+	xmlDocPtr doc;
+	xmlNodePtr parent, child;
+	xmlXPathContextPtr xpathCtx;
+	xmlXPathObjectPtr xpathObj;
+	int i;
+
+	xmlKeepBlanksDefault(0);
+	
+	doc = xmlParseFile(filename);
+	if (doc == NULL) {
+		fprintf(stderr, "Error: unable to parse file \"%s\"\n", filename);
+		return;
+	}
+
+	xpathCtx = xmlXPathNewContext(doc);
+	if(xpathCtx == NULL) {
+		fprintf(stderr,"Error: unable to create new XPath context\n");
+		xmlFreeDoc(doc); 
+		return;
+	}
+
+	xpathObj = xmlXPathEvalExpression("/languages/lang", xpathCtx);
+	if(xpathObj == NULL) {
+		fprintf(stderr,"Error: unable to evaluate xpath expression \"%s\"\n", "/languages/lang");
+		xmlXPathFreeContext(xpathCtx);
+		xmlFreeDoc(doc); 
+		return;
+	}
+
+	for(i=0; i<sizeof_dicts; i++)
+	{
+		child = xpathObj->nodesetval->nodeTab[i]->children;
+		/*g_print("\nname %s code %s flag %s", xmlNodeGetContent (child),
+		        xmlNodeGetContent (child->next),
+		        xmlNodeGetContent (child->next->next));*/
+		strcpy (dictionaries->name, xmlNodeGetContent (child));
+		strcpy (dictionaries->code, xmlNodeGetContent (child->next));
+		strcpy (dictionaries->flag, xmlNodeGetContent (child->next->next));
+		dictionaries++;
+	}
+
+	xmlXPathFreeObject(xpathObj);                                  
+	xmlXPathFreeContext(xpathCtx);
+	xmlFreeDoc(doc);
+}
 
 char *execute_xpath_expression (const char* filename, const xmlChar* xpathExpr, const xmlChar* nsList, int size)
 {

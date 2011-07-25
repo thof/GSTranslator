@@ -55,6 +55,7 @@ gchar *favorite_key, *favorite_key_backward, *text_to_trans;
 int lang_src, lang_dst, close_notify, favorite_index, favorite_size, deploy, temp, custom_signal;
 gint *w_width, *w_height, *w_x, *w_y;
 int fav_src[20], fav_dst[20];
+int sizeof_dicts = 60;
 char recent_clip[4096], conf_file[512];
 size_t src_length;
 language dictionaries[60];
@@ -99,7 +100,7 @@ int main (int argc, char *argv[])
 	GtkTextBuffer *buffer_src, *buffer_dest;
 	GdkPixbuf *pixbuffer;
 	
-	deploy = 1;
+	deploy = 0;
 	gtk_init (&argc, &argv);
 	recent_clip[0] = '\0';
 	close_notify = 1;
@@ -550,40 +551,18 @@ void init_config (gpointer user_data)
 
 void init_languages (gpointer user_data)
 {
-	FILE *fr;
+	char fr[512];
 	char line[50];
 	int i=0, j;
 	char *part, *temp_char;
 	size_t cnt=0;
 	
-	if(deploy)
-	{
-		fr = fopen (PACKAGE_DATA_DIR"/gstranslator/config/languages", "rt");
-	}
-	else
-	{
-		fr = fopen ("src/config/languages", "rt");
-	}
-	
-	while(fgets(line, 50, fr) != NULL)
-    {
-		temp_char = &line;
-		part = strchr (line, ';');
-		strncpy (dictionaries[i].name, temp_char, part-line);
-		//g_print("\n%s", dictionaries[i].name);
-
-		cnt = part-line+1;
-		part = strchr (part+1, ';');
-		strncpy (dictionaries[i].code, temp_char+cnt, part-line-cnt);
-		//g_print("\n%s", dictionaries[i].code);
-		
-		cnt = part-line+1;
-		part = strchr (part+1, '\n');		
-		strncpy (dictionaries[i].flag, temp_char+cnt, part-line-cnt);
-		//g_print("\n%s", dictionaries[i].flag);
-		
-		i++;
-	}
+	deploy ? sprintf (fr, PACKAGE_DATA_DIR"/gstranslator/config/languages.xml") :
+		sprintf (fr, "src/config/languages.xml");
+	xmlInitParser();
+	load_languages_from_xml (fr, &dictionaries, sizeof_dicts);
+	//save_languages_to_xml (&dictionaries, sizeof_dicts);
+	xmlCleanupParser();
 	load_settings (user_data);
 }
 
@@ -665,7 +644,6 @@ void load_settings (gpointer user_data)
 		//g_print ("\n%d %s %d=%d %d", i, dictionaries[i].code, k-1, successor[k-1], i-j);
 		dictionaries[i].predecessor = i-j;
 	}
-	                                   
 	favorite_index = -1;
 	change_favorite (user_data);
 }
