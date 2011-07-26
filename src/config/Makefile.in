@@ -199,7 +199,8 @@ top_srcdir = @top_srcdir@
 configdir = $(datadir)/gstranslator/config
 config_DATA = \
 	config.xml \
-	languages
+	languages \
+	languages.xml
 
 EXTRA_DIST = $(config_DATA)
 all: all-am

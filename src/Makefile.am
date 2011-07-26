@@ -33,7 +33,9 @@ gstranslator_SOURCES = \
 	request.c \
 	request.h \
 	properties.c \
-	properties.h
+	properties.h \
+	data_logger.c \
+	data_logger.h
 
 gstranslator_CFLAGS = -lcurl
 

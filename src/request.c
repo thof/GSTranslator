@@ -18,6 +18,7 @@
  */
 
 #include "request.h"
+#include "data_logger.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -409,13 +410,14 @@ char *getOneLook(char *text_to_trans)
 }
 
 
-char *parse_translation(gchar *json_out){
+char *parse_translation(gchar *json_out, int lang_src, int lang_dst)
+{
 	JsonParser *parser;
 	JsonNode *root;
 	GError *error;
-	gchar simple_trans[strlen(json_out)];
+	gchar simple_trans[strlen(json_out)], orig[256], *trans[256], body[strlen(json_out)];
 	gchar *result;
-	int i, j;
+	int i, j, to_save=0;
 
 	parser = json_parser_new ();
 	error = NULL;
@@ -464,36 +466,43 @@ char *parse_translation(gchar *json_out){
 		json_reader_read_element (reader, 0); //2
 		json_reader_read_member (reader, "orig"); //3
 		strcpy (simple_trans, json_reader_get_string_value (reader));
+		strncpy (orig, json_reader_get_string_value (reader), 256);
 		strcat (simple_trans, " - ");
 		json_reader_end_member (reader); //3
 		json_reader_read_member (reader, "trans"); //4
-		//char *to_upper = json_reader_get_string_value (reader);
-		//to_upper_case (to_upper);
 		strcat (simple_trans, json_reader_get_string_value (reader));
+		strncpy (trans, json_reader_get_string_value (reader), 256);
 		json_reader_end_member (reader); //4
 		json_reader_end_element (reader); //2
 		json_reader_end_member (reader); //1
 	}
 
 	json_reader_read_member (reader, "dict"); //1
+	body[0]='\0';
 
 	for(j=0; j<json_reader_count_elements (reader); j++)
 	{
+		to_save=1;
 		json_reader_read_element (reader, j); //2
 		json_reader_read_member (reader, "pos"); //3
-		strcat(simple_trans, "\n\n");
-		strcat(simple_trans, json_reader_get_string_value (reader));
-		strcat(simple_trans, "\n");
+		//strcat(simple_trans, "\n\n");
+		strcat(body, "\n\n");
+		//strcat(simple_trans, json_reader_get_string_value (reader));
+		strcat(body, json_reader_get_string_value (reader));
+		//strcat(simple_trans, "\n");
+		strcat(body, "\n");
 		json_reader_end_member (reader); //3
 		json_reader_read_member (reader, "terms"); //4
 
 		for(i=0; i<json_reader_count_elements (reader); i++){
 			if(i!=0)
 			{
-				strcat(simple_trans, ", ");
+				//strcat(simple_trans, ", ");
+				strcat(body, ", ");
 			}
 			json_reader_read_element (reader, i); //5
-			strcat(simple_trans, json_reader_get_string_value (reader));
+			//strcat(simple_trans, json_reader_get_string_value (reader));
+			strcat(body, json_reader_get_string_value (reader));
 			json_reader_end_element (reader); //5
 
 		}
@@ -505,6 +514,12 @@ char *parse_translation(gchar *json_out){
 	
 	g_object_unref (parser);
 
+	if(to_save || strcmp(orig, trans))
+	{
+		store_phrase(orig, trans, body, lang_src, lang_dst);
+	}
+
+	strcat (simple_trans, body);
 	result = strdup (simple_trans);
 
 	return result;

@@ -44,5 +44,14 @@ typedef struct
 	int code;
 } hidden_dicts;
 
+typedef struct
+{
+	int src;
+	int dst;
+	char orig[256];
+	char trans[256];
+	char body[1024];
+} phrase;
+
 int create_properties_window(char *conf_file, int deploy, language * dictionaries);
 #endif

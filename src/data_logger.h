@@ -1,7 +1,7 @@
 /*
- * request.h
+ * data_logger.h
  *
- * Copyright (C) thof 2011 <>
+ * Copyright (C) 2011 - 
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,9 +17,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef HEADER_REQUEST
-#define HEADER_REQUEST
-char *getTranslation(char *text_to_trans, char *lang_src_str, char *lang_dst_str);
-char *getSJP(char *text_to_trans);
-char *parse_translation(char *json_out, int lang_src, int lang_dst);
+#ifndef HEADER_LOGGER
+#define HEADER_LOGGER
+void store_phrase(char *orig, char *trans, char *body, int lang_src, int lang_dst);
+void size_phrases (int size);
 #endif

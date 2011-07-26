@@ -282,7 +282,7 @@ void translate (int method, char *input_text, gpointer user_data)
 		json_out = getTranslation(input_text, 
 		                                dictionaries[lang_src].code, 
 		                                dictionaries[lang_dst].code);
-		result_trans = parse_translation(json_out);
+		result_trans = parse_translation(json_out, lang_src, lang_dst);
 		g_free (json_out);
 	}
 	gtk_text_buffer_set_text (buffer_dest, result_trans, -1);
@@ -378,7 +378,7 @@ void translate_from_clipboard(const char *received_text)
 		                                dictionaries[lang_src].code, 
 		                                dictionaries[lang_dst].code);
 		//g_print("\n%s", json_out);
-		char *result_trans = parse_translation(json_out);
+		char *result_trans = parse_translation(json_out, lang_src, lang_dst);
 		//g_print("\n%s", result_trans);
 		
 		size_t summary_length = strcspn (result_trans, "\n");
@@ -613,6 +613,8 @@ void load_settings (gpointer user_data)
 		temp_char = execute_xpath_expression (conf_file, lang_temp, NULL, 0);
 		hidden_array[i] = atoi (temp_char);
 	}
+
+	size_phrases (5);
 	
 	xmlCleanupParser();
 
