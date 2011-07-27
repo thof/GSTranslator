@@ -23,11 +23,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <gtk/gtk.h>
-
+#include <libxml/tree.h>
+#include <libxml/parser.h>
+#include <libxml/xpath.h>
+#include <libxml/xpathInternals.h>
 
 phrase* phrases=NULL;
 int size_p, current_index;
+
+void save_phrases_to_file (char *filename);
+
 
 void print_phrases()
 {
@@ -57,14 +62,25 @@ void store_phrase(char *orig, char *trans, char *body, int lang_src, int lang_ds
 	}
 	if(current_index>=size_p)
 	{
-		//save to file
+		xmlInitParser();
+		char filename[128];
+		sprintf(filename, "%s/words.xml", getenv("HOME"));
+		save_phrases_to_file (filename);
+		xmlCleanupParser();
 		current_index=0;
 	}
 	phrases[current_index].src = lang_src;
 	phrases[current_index].dst = lang_dst;
 	strcpy(phrases[current_index].orig, orig);
 	strcpy(phrases[current_index].trans, trans);
-	strcpy(phrases[current_index].body, body);
+	if(body==NULL)
+	{
+		strcpy(phrases[current_index].body, body);
+	}
+	else
+	{
+		strcpy(phrases[current_index].body, body+2);
+	}
 	current_index++;
 	print_phrases();
 }
@@ -80,4 +96,66 @@ void size_phrases (int size)
 	}
 	size_p = size;
 	phrases = malloc (size*sizeof(phrase));
+}
+
+
+void save_phrases_to_file (char *filename)
+{
+	xmlDocPtr doc;
+	xmlNodePtr parent, child;
+	xmlXPathContextPtr xpathCtx;
+	xmlXPathObjectPtr xpathObj;
+	int i, cond=0;
+	char temp[16];
+	
+	xmlKeepBlanksDefault(0);
+	doc = xmlParseFile(filename);
+	if (doc == NULL)
+	{
+		doc = xmlNewDoc (BAD_CAST "1.0");
+		parent = xmlNewNode(NULL, "phrases");
+		xmlDocSetRootElement(doc, parent);
+	}
+	else
+	{
+		cond = 1;
+		xpathCtx = xmlXPathNewContext(doc);
+		if(xpathCtx == NULL)
+		{
+			fprintf(stderr,"Error: unable to create new XPath context\n");
+			xmlFreeDoc(doc);
+			return;
+		}
+
+		// add keyboard shortcuts
+		xpathObj = xmlXPathEvalExpression("/phrases", xpathCtx);
+		if(xpathObj == NULL) 
+		{
+			fprintf(stderr,"Error: unable to evaluate xpath expression\n");
+			xmlXPathFreeContext(xpathCtx);
+			xmlFreeDoc(doc); 
+			return;
+		}
+		parent = xpathObj->nodesetval->nodeTab[0];
+	}
+	for(i=0; i<size_p; i++)
+	{
+		child = xmlNewChild (parent, NULL, "phrase", NULL);
+
+		sprintf(temp, "%d",phrases[i].src);
+		xmlNewChild (child, NULL, "src", temp);
+		sprintf(temp, "%d", phrases[i].dst);
+		xmlNewChild (child, NULL, "dst", temp);
+		xmlNewChild (child, NULL, "orig", phrases[i].orig);
+		xmlNewChild (child, NULL, "trans", phrases[i].trans);
+		xmlNewChild (child, NULL, "body", phrases[i].body);
+	}
+
+	if(cond)
+	{
+		xmlXPathFreeObject(xpathObj);                                  
+		xmlXPathFreeContext(xpathCtx);
+	}
+	xmlSaveFormatFile (filename, doc, 1);
+	xmlFreeDoc(doc);
 }
