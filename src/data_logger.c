@@ -36,7 +36,7 @@ void save_phrases_to_file (char *filename);
 
 void print_phrases()
 {
-	int i;	
+	int i;
 	for(i=0; i<current_index; i++)
 	{
 		if(phrases[i].src==NULL)
@@ -48,6 +48,7 @@ void print_phrases()
 		g_print ("\n***%s", phrases[i].orig);
 	}
 	g_print ("\n");
+	//clean_xml_file ("/home/rad/words.xml");
 }
 
 void store_phrase(char *orig, char *trans, char *body, int lang_src, int lang_dst)
@@ -159,3 +160,82 @@ void save_phrases_to_file (char *filename)
 	xmlSaveFormatFile (filename, doc, 1);
 	xmlFreeDoc(doc);
 }
+
+
+void clean_xml_file (char *filename)
+{
+	xmlDocPtr doc;
+	xmlNodePtr node_p, child, child_p, next_p, temp;
+	xmlXPathContextPtr xpathCtx;
+	xmlXPathObjectPtr xpathObj;
+	int size, i, cond=0;
+	char temp_val[16];
+	
+	xmlKeepBlanksDefault(0);
+	doc = xmlParseFile(filename);
+	if (doc == NULL) {
+		fprintf(stderr, "Error: unable to parse file \"%s\"\n", filename);
+		return;
+	}
+
+	xpathCtx = xmlXPathNewContext(doc);
+	if(xpathCtx == NULL) {
+		fprintf(stderr,"Error: unable to create new XPath context\n");
+		xmlFreeDoc(doc); 
+		return;
+	}
+
+	xpathObj = xmlXPathEvalExpression("/phrases/phrase", xpathCtx);
+	if(xpathObj == NULL) {
+		fprintf(stderr,"Error: unable to evaluate xpath expression\n");
+		xmlXPathFreeContext(xpathCtx);
+		xmlFreeDoc(doc); 
+		return;
+	}
+
+	node_p = xpathObj->nodesetval->nodeTab[0];
+
+	do
+	{
+		child_p = node_p->children;
+		g_print ("\n%s %s %s %s", xmlNodeGetContent (child_p), 
+			         xmlNodeGetContent (child_p->next), 
+			         xmlNodeGetContent (child_p->next->next),
+			         xmlNodeGetContent (child_p->next->next->next)
+			         );
+		next_p = node_p->next;
+		do
+		{
+			cond=0;
+			if(!next_p)
+			{
+				break;
+			}
+			child=(next_p->children);
+			g_print ("\n***%s %s %s %s", xmlNodeGetContent (child), 
+			         xmlNodeGetContent (child->next), 
+			         xmlNodeGetContent (child->next->next),
+			         xmlNodeGetContent (child->next->next->next)
+			         );
+			if(strcmp(xmlNodeGetContent (child), xmlNodeGetContent (child_p))==0 &&
+			   strcmp(xmlNodeGetContent (child->next), xmlNodeGetContent (child_p->next))==0 &&
+			   strcmp(xmlNodeGetContent (child->next->next), xmlNodeGetContent (child_p->next->next))==0
+			   )
+			{
+				temp = next_p->prev;
+				xmlUnlinkNode (next_p);
+				next_p = temp;
+				//xmlFreeNode (next_p);
+				//cond=1;
+			}
+		}
+		while((next_p=(next_p->next)));
+	}
+	while(node_p=(node_p->next));
+
+	xmlXPathFreeObject(xpathObj);                                  
+	xmlXPathFreeContext(xpathCtx);
+	xmlSaveFormatFile (filename, doc, 1);
+	xmlFreeDoc(doc);
+}
+

@@ -103,25 +103,18 @@ char *clean_output (char *string, char *pattern, size_t len)
 	return string_new;
 }
 
-int count_occurence (char *str, char *orig)
+
+char *to_lower_case(char string[])
 {
-	int cnt=0;
-	int orig_len = strlen(orig);
-	char *buffer;
-	buffer = strstr(str, orig);
-	while(buffer)
+	char result[strlen(string)];
+	int  i = 0;
+
+	while(string[i])
 	{
-		buffer = strstr(buffer+orig_len, orig);
-		cnt++;
+		result[i] = tolower(string[i]);
+		i++;
 	}
-	return cnt;
-}
-
-
-void to_upper_case(char *q)
-{
-	unsigned char c;
-	while (*q) { c = *q; *q = toupper(c); q++; }
+	return result;
 }
 
 
@@ -514,7 +507,7 @@ char *parse_translation(gchar *json_out, int lang_src, int lang_dst)
 	
 	g_object_unref (parser);
 
-	if(to_save || strcmp(orig, trans))
+	if(to_save || strcmp(to_lower_case(orig), to_lower_case(trans)))
 	{
 		store_phrase(orig, trans, body, lang_src, lang_dst);
 	}
