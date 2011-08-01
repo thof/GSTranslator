@@ -1,7 +1,7 @@
 /*
  * properties.c
  *
- * Copyright (C) 2011 - 
+ * Copyright (C) thof 2011 <>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 
 #include "properties.h"
 #include "xml_parser.h"
+#include "data_logger.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -51,27 +52,43 @@ typedef struct
 	GtkWidget *move_down_button;
 	GtkWidget *delete_button;
 	GtkWidget *add_button;
+	GtkWidget *delete_log_button;
+	GtkWidget *add_log_button;
 	GtkWidget *delete_hidden_button;
 	GtkWidget *add_hidden_button;
 	GtkWidget *add_all_hidden_button;
 	GtkWidget *store;
+	GtkWidget *store_log;
 	GtkWidget *store_hidden;
 	GtkWidget *tree;
+	GtkWidget *tree_log;
 	GtkWidget *tree_hidden;
 	GtkWidget *column;
+	GtkWidget *column_log;
 	GtkWidget *column_hidden;
 	GtkWidget *renderer;
+	GtkWidget *renderer_log;
 	GtkWidget *renderer_hidden;
 	GtkWidget *cb_src;
 	GtkWidget *cb_dst;
+	GtkWidget *cb_src_log;
+	GtkWidget *cb_dst_log;
 	GtkWidget *cb_hidden;
+	GtkWidget *choose_file_button;
+	GtkWidget *choose_output_button;
+	GtkWidget *clean_xml_button;
+	GtkWidget *log_file_entry;
+	GtkWidget *save_freq_entry;
+	GtkWidget *output_file_entry;
+	GtkWidget *convert_button;
 } Widgets;
 
 int size_lang, exit_code;
-char conf_file[512];
+char conf_file[512], log_filename[512], output_filename[512];
 language dicts[60];
-shortcuts shortcut[4];
+shortcuts shortcut[6];
 favorites favorite[20];
+favorites favorite_log[20];
 hidden_dicts h_dict[60];
 
 void init_favorites_list (gpointer user_data, GtkBuilder *builder);
@@ -83,11 +100,16 @@ void move_down (GtkButton *button, gpointer user_data);
 void load_shortcuts (gpointer user_data);
 void delete_favorite (GtkButton *button, gpointer user_data);
 void add_favorite (GtkButton *button, gpointer user_data);
+void delete_log (GtkButton *button, gpointer user_data);
+void add_log (GtkButton *button, gpointer user_data);
 void delete_hidden (GtkButton *button, gpointer user_data);
 void add_hidden (GtkButton *button, gpointer user_data);
 void add_all_hidden (GtkButton *button, gpointer user_data);
 void save_config (GtkButton *button, gpointer user_data);
 void exit_window (GtkButton *button, gpointer user_data);
+void choose_file_dialog (GtkButton *button,  gpointer user_data);
+void clean_xml (void);
+void convert (GtkButton *button,  gpointer user_data);
 
 int create_properties_window(char *conf_file_xml, int deploy, language *dictionaries)
 {
@@ -122,12 +144,16 @@ int create_properties_window(char *conf_file_xml, int deploy, language *dictiona
 	g_signal_connect (widgets->ok_button, "clicked", G_CALLBACK (save_config), widgets);
 	widgets->ok_button = gtk_builder_get_object (builder, "ok_button2");
 	g_signal_connect (widgets->ok_button, "clicked", G_CALLBACK (save_config), widgets);
+	widgets->ok_button = gtk_builder_get_object (builder, "ok_button3");
+	g_signal_connect (widgets->ok_button, "clicked", G_CALLBACK (save_config), widgets);
 
 	widgets->cancel_button = gtk_builder_get_object (builder, "cancel_button");
 	g_signal_connect (widgets->cancel_button, "clicked", G_CALLBACK (exit_window), widgets);
 	widgets->cancel_button = gtk_builder_get_object (builder, "cancel_button1");
 	g_signal_connect (widgets->cancel_button, "clicked", G_CALLBACK (exit_window), widgets);
 	widgets->cancel_button = gtk_builder_get_object (builder, "cancel_button2");
+	g_signal_connect (widgets->cancel_button, "clicked", G_CALLBACK (exit_window), widgets);
+	widgets->cancel_button = gtk_builder_get_object (builder, "cancel_button3");
 	g_signal_connect (widgets->cancel_button, "clicked", G_CALLBACK (exit_window), widgets);
 
 	widgets->entry_sn = gtk_builder_get_object (builder, "entry_sn");
@@ -141,21 +167,48 @@ int create_properties_window(char *conf_file_xml, int deploy, language *dictiona
 	g_signal_connect (widgets->move_down_button, "clicked", G_CALLBACK (move_down), widgets);
 	widgets->cb_src = gtk_builder_get_object (builder, "cb_src");
 	widgets->cb_dst = gtk_builder_get_object (builder, "cb_dst");
+	widgets->cb_src_log = gtk_builder_get_object (builder, "cb_src_log");
+	widgets->cb_dst_log = gtk_builder_get_object (builder, "cb_dst_log");
 	widgets->cb_hidden = gtk_builder_get_object (builder, "cb_hidden");
 	widgets->add_button = gtk_builder_get_object (builder, "add_button");
 	g_signal_connect (widgets->add_button, "clicked", G_CALLBACK (add_favorite), widgets);
+	widgets->add_log_button = gtk_builder_get_object (builder, "add_log_button");
+	g_signal_connect (widgets->add_log_button, "clicked", G_CALLBACK (add_log), widgets);
 	widgets->add_hidden_button = gtk_builder_get_object (builder, "add_hidden_button");
 	g_signal_connect (widgets->add_hidden_button, "clicked", G_CALLBACK (add_hidden), widgets);
 	widgets->add_all_hidden_button = gtk_builder_get_object (builder, "add_all_hidden_button");
 	g_signal_connect (widgets->add_all_hidden_button, "clicked", G_CALLBACK (add_all_hidden), widgets);
 	widgets->delete_button = gtk_builder_get_object (builder, "delete_button");
 	g_signal_connect (widgets->delete_button, "clicked", G_CALLBACK (delete_favorite), widgets);
+	widgets->delete_log_button = gtk_builder_get_object (builder, "delete_log_button");
+	g_signal_connect (widgets->delete_log_button, "clicked", G_CALLBACK (delete_log), widgets);
 	widgets->delete_hidden_button = gtk_builder_get_object (builder, "delete_hidden_button");
 	g_signal_connect (widgets->delete_hidden_button, "clicked", G_CALLBACK (delete_hidden), widgets);
+
+	widgets->choose_file_button = gtk_builder_get_object (builder, "choose_file_button");
+	g_signal_connect (widgets->choose_file_button, "clicked", G_CALLBACK (choose_file_dialog), widgets);
+	widgets->choose_output_button = gtk_builder_get_object (builder, "choose_output_button");
+	g_signal_connect (widgets->choose_output_button, "clicked", G_CALLBACK (choose_file_dialog), widgets);
+	widgets->log_file_entry = gtk_builder_get_object (builder, "log_file_entry");
+	widgets->output_file_entry = gtk_builder_get_object (builder, "output_file_entry");
+	widgets->save_freq_entry = gtk_builder_get_object (builder, "save_freq_entry");
+	widgets->clean_xml_button = gtk_builder_get_object (builder, "clean_xml_button");
+	g_signal_connect (widgets->clean_xml_button, "clicked", G_CALLBACK (clean_xml), NULL);
+	widgets->convert_button = gtk_builder_get_object (builder, "convert_button");
+	g_signal_connect (widgets->convert_button, "clicked", G_CALLBACK (convert), widgets);
+	gtk_widget_set_sensitive (widgets->convert_button, FALSE);
 	
+	
+	xmlInitParser();
 	load_shortcuts (widgets);
 	init_favorites_list (widgets, builder);
 	init_hidden_list (widgets, builder);
+	strcpy(log_filename, execute_xpath_expression (conf_file, "/config/log_filename", NULL, 0));                    
+	gtk_entry_set_text (widgets->log_file_entry, log_filename);
+	gtk_entry_set_text (widgets->save_freq_entry, 
+	                    execute_xpath_expression (conf_file, "/config/save_frequency", NULL, 0));
+	xmlCleanupParser();
+	
 
 	gtk_widget_show (widgets->window);
 	gtk_main ();
@@ -170,9 +223,13 @@ void init_favorites_list (gpointer user_data, GtkBuilder *builder)
 	widgets->store = gtk_tree_store_new (N_COLUMNS,
 	                            G_TYPE_STRING,
 	                            G_TYPE_STRING);
+	widgets->store_log = gtk_tree_store_new (N_COLUMNS,
+	                            G_TYPE_STRING,
+	                            G_TYPE_STRING);
 
 	load_favorites (widgets);
 
+	//favorite list
 	widgets->tree = GTK_WIDGET (gtk_builder_get_object (builder, "favorite_view"));
 	gtk_tree_view_set_model (widgets->tree, GTK_TREE_MODEL (widgets->store));
 
@@ -185,18 +242,32 @@ void init_favorites_list (gpointer user_data, GtkBuilder *builder)
 	widgets->column = gtk_tree_view_column_new_with_attributes ("To", widgets->renderer,
 	                                                   "text", TO_COLUMN, NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (widgets->tree), widgets->column);
+
+	//log_list
+	widgets->tree_log = GTK_WIDGET (gtk_builder_get_object (builder, "log_view"));
+	gtk_tree_view_set_model (widgets->tree_log, GTK_TREE_MODEL (widgets->store_log));
+
+	widgets->renderer_log = gtk_cell_renderer_text_new ();
+	widgets->column_log = gtk_tree_view_column_new_with_attributes ("From", widgets->renderer_log,
+	                                                   "text", FROM_COLUMN, NULL);
+	gtk_tree_view_append_column (GTK_TREE_VIEW (widgets->tree_log), widgets->column_log);
+
+	widgets->renderer_log = gtk_cell_renderer_text_new ();
+	widgets->column_log = gtk_tree_view_column_new_with_attributes ("To", widgets->renderer_log,
+	                                                   "text", TO_COLUMN, NULL);
+	gtk_tree_view_append_column (GTK_TREE_VIEW (widgets->tree_log), widgets->column_log);
 }
 
 
 void load_favorites (gpointer user_data)
 {
 	GtkTreeIter iter;
+	GtkTreeIter iter_log;
 	int i, src, dst;
 	char lang_temp_src[128], lang_temp_dst[128];
 	char *temp_src, *temp_dst;
 	Widgets *widgets = (Widgets*)user_data;
 
-	xmlInitParser();
 	int favorite_size = get_xpath_nodes_size (conf_file, "//favorite", NULL);
 	for(i=0; i<favorite_size; i++)
 	{
@@ -213,14 +284,20 @@ void load_favorites (gpointer user_data)
 		                    FROM_COLUMN, dicts[src].name,
 		                    TO_COLUMN, dicts[dst].name,
 		                    -1);
+		gtk_tree_store_append (widgets->store_log, &iter_log, NULL);
+		gtk_tree_store_set (widgets->store_log, &iter_log,
+		                    FROM_COLUMN, dicts[src].name,
+		                    TO_COLUMN, dicts[dst].name,
+		                    -1);
 	}
-	xmlCleanupParser();
 
 	int size_dicts = strlen(dicts);
 	for(i=0; i<size_lang; i++)
 	{
 		gtk_combo_box_text_append_text (widgets->cb_src, dicts[i].name);
 		gtk_combo_box_text_append_text (widgets->cb_dst, dicts[i].name);
+		gtk_combo_box_text_append_text (widgets->cb_src_log, dicts[i].name);
+		gtk_combo_box_text_append_text (widgets->cb_dst_log, dicts[i].name);
 		gtk_combo_box_text_append_text (widgets->cb_hidden, dicts[i].name);
 	}
 }
@@ -252,7 +329,6 @@ void load_hidden (gpointer user_data)
 	char *temp;
 	Widgets *widgets = (Widgets*)user_data;
 
-	xmlInitParser();
 	int hidden_size = get_xpath_nodes_size (conf_file, "//hidden", NULL);
 	for(i=0; i<hidden_size; i++)
 	{
@@ -266,7 +342,6 @@ void load_hidden (gpointer user_data)
 		                    HIDDEN_COLUMN, dicts[tmp].name,
 		                    -1);
 	}
-	xmlCleanupParser();
 }
 
 
@@ -326,6 +401,9 @@ void delete_favorite (GtkButton *button, gpointer user_data)
 	}
 	gtk_tree_selection_get_selected (selected, NULL, &first_iter);
 	gtk_tree_store_remove (widgets->store, &first_iter);
+
+	GtkTreePath *path = gtk_tree_path_new_first ();
+	gtk_tree_selection_select_path (selected, path);
 }
 
 
@@ -344,6 +422,46 @@ void add_favorite (GtkButton *button, gpointer user_data)
 	
 	gtk_tree_store_append (widgets->store, &iter, NULL);
 	gtk_tree_store_set (widgets->store, &iter,
+	                    FROM_COLUMN, dicts[src_num].name,
+	                    TO_COLUMN, dicts[dst_num].name,
+	                    -1);
+}
+
+
+void delete_log (GtkButton *button, gpointer user_data)
+{
+	GtkTreeIter first_iter;
+	GtkTreeSelection *selected;
+	Widgets *widgets = (Widgets*)user_data;
+	
+	selected = gtk_tree_view_get_selection (widgets->tree_log);
+	if(selected == NULL)
+	{
+		return 0;
+	}
+	gtk_tree_selection_get_selected (selected, NULL, &first_iter);
+	gtk_tree_store_remove (widgets->store_log, &first_iter);
+
+	GtkTreePath *path = gtk_tree_path_new_first ();
+	gtk_tree_selection_select_path (selected, path);
+}
+
+
+void add_log (GtkButton *button, gpointer user_data)
+{
+	GtkTreeIter iter;
+	Widgets *widgets = (Widgets*)user_data;
+	
+	if(gtk_combo_box_get_active (widgets->cb_src_log) == -1 || gtk_combo_box_get_active (widgets->cb_dst_log) == -1)
+	{
+		return 0;
+	}
+	
+	int src_num = gtk_combo_box_get_active (widgets->cb_src_log);
+	int dst_num = gtk_combo_box_get_active (widgets->cb_dst_log);
+	
+	gtk_tree_store_append (widgets->store_log, &iter, NULL);
+	gtk_tree_store_set (widgets->store_log, &iter,
 	                    FROM_COLUMN, dicts[src_num].name,
 	                    TO_COLUMN, dicts[dst_num].name,
 	                    -1);
@@ -424,12 +542,11 @@ void add_all_hidden (GtkButton *button, gpointer user_data)
 void load_shortcuts (gpointer user_data)
 {
 	Widgets *widgets = (Widgets*)user_data;
-	xmlInitParser();
+	
 	gtk_entry_set_text (widgets->entry_sn, execute_xpath_expression (conf_file, "//normal_notify_hotkey", NULL, 0));
 	gtk_entry_set_text (widgets->entry_wn, execute_xpath_expression (conf_file, "//wide_notify_hotkey", NULL, 0));
 	gtk_entry_set_text (widgets->entry_sf, execute_xpath_expression (conf_file, "//favorite_hotkey", NULL, 0));
 	gtk_entry_set_text (widgets->entry_sb, execute_xpath_expression (conf_file, "//favorite_hotkey_back", NULL, 0));
-	xmlCleanupParser();
 }
 
 
@@ -567,11 +684,65 @@ void save_config (GtkButton *button, gpointer user_data)
 	strcpy (shortcut[1].name, gtk_entry_get_text (widgets->entry_wn));
 	strcpy (shortcut[2].name, gtk_entry_get_text (widgets->entry_sf));
 	strcpy (shortcut[3].name, gtk_entry_get_text (widgets->entry_sb));
+	strcpy (shortcut[4].name, gtk_entry_get_text (widgets->log_file_entry));
+	strcpy (shortcut[5].name, gtk_entry_get_text (widgets->save_freq_entry));
+	
 
 	save_config_file (conf_file, &shortcut, &favorite, &h_dict);
 	exit_window (NULL, user_data);
 	exit_code = 1;
 }
+
+
+void choose_file_dialog (GtkButton *button,  gpointer user_data)
+{
+	Widgets *widgets = (Widgets*)user_data;
+	GtkWidget *dialog;
+	char current_folder[512];
+	size_t folder_pos = strstr(log_filename, basename(log_filename))-log_filename;
+	strncpy (current_folder, log_filename, folder_pos);
+	g_print(gtk_buildable_get_name (button));
+	
+	dialog = gtk_file_chooser_dialog_new ("Log File",
+	                                      widgets->window,
+	                                      GTK_FILE_CHOOSER_ACTION_SAVE,
+	                                      GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+	                                      GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+	                                      NULL);
+	if(strcmp(gtk_buildable_get_name (button), "choose_output_button")==0)
+	{
+		gtk_file_chooser_set_do_overwrite_confirmation (GTK_FILE_CHOOSER (dialog), TRUE);
+		gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (dialog), "output.txt");
+	}
+	else
+	{
+		gtk_file_chooser_set_do_overwrite_confirmation (GTK_FILE_CHOOSER (dialog), FALSE);
+		gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (dialog), basename(log_filename));
+	}
+	gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (dialog), current_folder);
+	if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT)
+	{
+		if(strcmp(gtk_buildable_get_name (button), "choose_output_button")==0)
+		{
+			strcpy(output_filename, gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog)));
+			gtk_entry_set_text (widgets->output_file_entry, output_filename);
+			gtk_widget_set_sensitive (widgets->convert_button, TRUE);
+		}
+		else
+		{
+			strcpy(log_filename, gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog)));
+			gtk_entry_set_text (widgets->log_file_entry, log_filename);	
+		}
+	}
+	gtk_widget_destroy (dialog);
+}
+
+
+void clean_xml()
+{
+	clean_xml_file (log_filename);
+}
+
 
 void exit_window (GtkButton *button,  gpointer user_data)
 {
@@ -579,4 +750,52 @@ void exit_window (GtkButton *button,  gpointer user_data)
 	gtk_main_quit ();
 	gtk_widget_destroy (widgets->window);
 	exit_code = 0;
+}
+
+
+void convert (GtkButton *button,  gpointer user_data)
+{
+	GtkTreeIter l_iter;
+	GValue l_value = {0};
+	char *l_src, *l_dst;
+	int i, j;
+	GtkWidget *dialog;
+	Widgets *widgets = (Widgets*)user_data;
+	
+	if(access(log_filename, R_OK)==0)
+	{
+		if(gtk_tree_model_get_iter_first (widgets->store_log, &l_iter))
+		{
+			j=0;
+			do
+			{
+				gtk_tree_model_get_value (widgets->store_log, &l_iter, 0, &l_value);
+				l_src = g_value_get_string (&l_value);
+				for(i=0; i<size_lang; i++)
+				{
+					if(strcmp(l_src, dicts[i].name) == 0)
+					{
+						favorite_log[j].src_code = i;
+						break;
+					}
+				}
+				g_value_unset(&l_value);
+				gtk_tree_model_get_value (widgets->store_log, &l_iter, 1, &l_value);
+				l_dst = g_value_get_string (&l_value);
+				for(i=0; i<size_lang; i++)
+				{
+					if(strcmp(l_dst, dicts[i].name) == 0)
+					{
+						favorite_log[j].dst_code = i;
+						break;
+					}
+				}
+				g_value_unset(&l_value);
+				j++;
+			}
+			while(gtk_tree_model_iter_next (widgets->store_log, &l_iter));
+		}
+
+		convert_to_anki (log_filename, output_filename, &favorite_log);
+	}
 }

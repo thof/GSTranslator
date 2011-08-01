@@ -31,9 +31,10 @@
 
 phrase* phrases=NULL;
 int size_p, current_index;
+char log_filename[512];
 
-void save_phrases_to_file (char *filename);
-void convert_to_anki (char *file_in, char *file_out);
+void save_phrases_to_file ();
+int convert_to_anki (char *file_in, char *file_out, favorites * favorite_log);
 
 
 char *replace_char (char *string, char pattern, char *replace, size_t len)
@@ -50,7 +51,7 @@ char *replace_char (char *string, char pattern, char *replace, size_t len)
 		strncat (string_new, temp, j);
 		strcat (string_new, replace);
 		temp = p+1;
-		g_print ("\n%s\n",string_new);
+		//g_print ("\n%s\n",string_new);
 	}
 	strcat (string_new, temp);
 	//g_print ("\n%s", string_new);
@@ -72,13 +73,16 @@ void print_phrases()
 		g_print ("\n***%s", phrases[i].orig);
 	}
 	g_print ("\n");
-	//clean_xml_file ("/home/rad/words.xml");
-	convert_to_anki ("/home/rad/words.xml", "/home/rad/words.txt");
 }
 
 void store_phrase(char *orig, char *trans, char *body, int lang_src, int lang_dst)
 {
 	int i;
+
+	if(!size_p)
+	{
+		return;
+	}
 	for (i=0; i<current_index; i++)
 	{
 		if (strcmp(orig, phrases[i].orig)==0)
@@ -89,9 +93,7 @@ void store_phrase(char *orig, char *trans, char *body, int lang_src, int lang_ds
 	if(current_index>=size_p)
 	{
 		xmlInitParser();
-		char filename[128];
-		sprintf(filename, "%s/words.xml", getenv("HOME"));
-		save_phrases_to_file (filename);
+		save_phrases_to_file ();
 		xmlCleanupParser();
 		current_index=0;
 	}
@@ -112,20 +114,21 @@ void store_phrase(char *orig, char *trans, char *body, int lang_src, int lang_ds
 }
 
 
-void size_phrases (int size)
+void load_settings_log (char *size, char *filename)
 {
 	current_index = 0;
+	strcpy(log_filename, filename);
 	if(phrases!=NULL)
 	{
 		free(phrases);
 		phrases=NULL;
 	}
-	size_p = size;
-	phrases = malloc (size*sizeof(phrase));
+	size_p = atoi (size);
+	phrases = malloc (size_p*sizeof(phrase));
 }
 
 
-void save_phrases_to_file (char *filename)
+void save_phrases_to_file ()
 {
 	xmlDocPtr doc;
 	xmlNodePtr parent, child;
@@ -133,9 +136,14 @@ void save_phrases_to_file (char *filename)
 	xmlXPathObjectPtr xpathObj;
 	int i, cond=0;
 	char temp[16];
+
+	if(!size_p)
+	{
+		return;
+	}
 	
 	xmlKeepBlanksDefault(0);
-	doc = xmlParseFile(filename);
+	doc = xmlParseFile(log_filename);
 	if (doc == NULL)
 	{
 		doc = xmlNewDoc (BAD_CAST "1.0");
@@ -164,7 +172,7 @@ void save_phrases_to_file (char *filename)
 		}
 		parent = xpathObj->nodesetval->nodeTab[0];
 	}
-	for(i=0; i<size_p; i++)
+	for(i=0; i<current_index; i++)
 	{
 		child = xmlNewChild (parent, NULL, "phrase", NULL);
 
@@ -182,23 +190,30 @@ void save_phrases_to_file (char *filename)
 		xmlXPathFreeObject(xpathObj);                                  
 		xmlXPathFreeContext(xpathCtx);
 	}
-	xmlSaveFormatFile (filename, doc, 1);
+	xmlSaveFormatFile (log_filename, doc, 1);
 	xmlFreeDoc(doc);
 }
 
 
-void convert_to_anki (char *file_in, char *file_out)
+int convert_to_anki (char *file_in, char *file_out, favorites * favorite_log)
 {
 	xmlDocPtr doc;
 	xmlNodePtr node_p, child, child_p, next_p, temp;
 	xmlXPathContextPtr xpathCtx;
 	xmlXPathObjectPtr xpathObj;
+	int src, dst;
 	char body_temp[4096];
+	favorites *fav_temp = favorite_log;
 	FILE *file = NULL, *file_temp = NULL;
   	file = fopen(file_out, "w");
 	file_temp = fopen(file_in, "r");
 	int size;
 
+	/*while (favorite_log->src_code != NULL)
+	{
+		g_print ("\n%d %d", favorite_log->src_code, favorite_log->dst_code);
+		favorite_log++;
+	}*/
 
 	if (file==NULL || file_temp==NULL) 
 	{
@@ -216,14 +231,14 @@ void convert_to_anki (char *file_in, char *file_out)
 	doc = xmlParseFile(file_in);
 	if (doc == NULL) {
 		fprintf(stderr, "Error: unable to parse file \"%s\"\n", file_in);
-		return;
+		return 1;
 	}
 
 	xpathCtx = xmlXPathNewContext(doc);
 	if(xpathCtx == NULL) {
 		fprintf(stderr,"Error: unable to create new XPath context\n");
 		xmlFreeDoc(doc); 
-		return;
+		return 1;
 	}
 
 	xpathObj = xmlXPathEvalExpression("/phrases/phrase", xpathCtx);
@@ -231,7 +246,7 @@ void convert_to_anki (char *file_in, char *file_out)
 		fprintf(stderr,"Error: unable to evaluate xpath expression\n");
 		xmlXPathFreeContext(xpathCtx);
 		xmlFreeDoc(doc); 
-		return;
+		return 1;
 	}
 	node_p = xpathObj->nodesetval->nodeTab[0];
 
@@ -239,12 +254,24 @@ void convert_to_anki (char *file_in, char *file_out)
 	do
 	{
 		child_p = node_p->children->next->next;
-		strcpy (body_temp, xmlNodeGetContent (child_p->next->next));
-		strcpy (body_temp, replace_char (&body_temp, '\n', "</br>", strlen(body_temp)));
-		sprintf (phrases_out + strlen (phrases_out), "\n%s\t<b>%s</b></br></br><font size=\"2\">%s</font>",
-		         xmlNodeGetContent (child_p), xmlNodeGetContent (child_p->next),
-		         body_temp);
-		g_print(phrases_out);
+		do
+		{
+			src = atoi (xmlNodeGetContent (child_p->prev->prev));
+			dst = atoi (xmlNodeGetContent (child_p->prev));
+			if(src==favorite_log->src_code && dst==favorite_log->dst_code)
+			{
+				strcpy (body_temp, xmlNodeGetContent (child_p->next->next));
+				strcpy (body_temp, replace_char (&body_temp, '\n', "</br>", strlen(body_temp)));
+				sprintf (phrases_out + strlen (phrases_out), "\n%s\t<b>%s</b></br></br><font size=\"2\">%s</font>",
+				         xmlNodeGetContent (child_p), xmlNodeGetContent (child_p->next),
+				         body_temp);
+				g_print(phrases_out);
+				//break;
+			}
+			favorite_log++;
+		}
+		while(favorite_log->src_code != NULL);
+		favorite_log = fav_temp;
 	}
 	while(node_p=(node_p->next));
 
@@ -254,6 +281,8 @@ void convert_to_anki (char *file_in, char *file_out)
 	xmlXPathFreeObject(xpathObj);                                  
 	xmlXPathFreeContext(xpathCtx);
 	xmlFreeDoc(doc);
+
+	return 0;
 }
 
 
@@ -319,8 +348,6 @@ void clean_xml_file (char *filename)
 				temp = next_p->prev;
 				xmlUnlinkNode (next_p);
 				next_p = temp;
-				//xmlFreeNode (next_p);
-				//cond=1;
 			}
 		}
 		while((next_p=(next_p->next)));
@@ -332,4 +359,3 @@ void clean_xml_file (char *filename)
 	xmlSaveFormatFile (filename, doc, 1);
 	xmlFreeDoc(doc);
 }
-

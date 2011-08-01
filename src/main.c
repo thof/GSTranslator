@@ -20,6 +20,7 @@
 #include "request.h"
 #include "xml_parser.h"
 #include "properties.h"
+#include "data_logger.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,6 +45,7 @@ typedef struct
 	GtkWidget *menuitem_about;
 	GtkWidget *scan_label;
 	GtkWidget *about_dialog;
+	GtkWidget *gstrans_paned;
 } Widgets;
 
 
@@ -53,7 +55,7 @@ NotifyNotification *notify_test;
 gchar *translated_text, *summary, *normal_notify_key, *wide_notify_key;
 gchar *favorite_key, *favorite_key_backward, *text_to_trans;
 int lang_src, lang_dst, close_notify, favorite_index, favorite_size, deploy, temp, custom_signal;
-gint *w_width, *w_height, *w_x, *w_y;
+gint *w_width, *w_height, *w_x, *w_y, paned_pos;
 int fav_src[20], fav_dst[20];
 int sizeof_dicts = 60;
 char recent_clip[4096], conf_file[512];
@@ -143,6 +145,7 @@ int main (int argc, char *argv[])
 	widgets->clipboard = gtk_clipboard_get (GDK_SELECTION_PRIMARY);
 	widgets->scan_label = gtk_builder_get_object (builder, "scan_label");
 	widgets->about_dialog = gtk_builder_get_object (builder, "about_dialog");
+	widgets->gstrans_paned = gtk_builder_get_object (builder, "gstrans_paned");
 	
 	notify_init("GSTranslator");
 	notify_open = notify_notification_new ("", "", NULL);
@@ -545,6 +548,9 @@ void init_config (gpointer user_data)
 	strcpy(temp_str, execute_xpath_expression (conf_file, "//default_y", NULL, 0));
 	y = atoi(temp_str);
 	gtk_window_move (widgets->window, x, y);
+	strcpy(temp_str, execute_xpath_expression (conf_file, "//paned_position", NULL, 0));
+	x = atoi(temp_str);
+	gtk_paned_set_position (widgets->gstrans_paned, x);
 	xmlCleanupParser();
 }
 
@@ -613,10 +619,10 @@ void load_settings (gpointer user_data)
 		temp_char = execute_xpath_expression (conf_file, lang_temp, NULL, 0);
 		hidden_array[i] = atoi (temp_char);
 	}
-
-	size_phrases (5);
 	
 	xmlCleanupParser();
+	load_settings_log (execute_xpath_expression (conf_file, "/config/save_frequency", NULL, 0),
+	                   execute_xpath_expression (conf_file, "/config/log_filename", NULL, 0));
 
 	if(size_h>1)
 	{
@@ -649,6 +655,7 @@ void load_settings (gpointer user_data)
 	favorite_index = -1;
 	change_favorite (user_data);
 }
+
 
 void change_favorite (gpointer user_data)
 {
@@ -747,6 +754,7 @@ void change_favorite_back (gpointer user_data)
 void open_properties (GtkMenuItem *menuitem, gpointer user_data)
 {
 	Widgets *widgets = (Widgets*)user_data;
+	save_phrases_to_file ();
 	if(create_properties_window(conf_file, deploy, &dictionaries))
 	{
 		load_settings (user_data);
@@ -766,7 +774,8 @@ int compare_ints (const void *a, const void *b)
 void destroy_window (GtkWidget *object, gpointer user_data)
 {
 	//gtk_widget_hide (object);
-	save_size_position (conf_file, &w_width, &w_height, &w_x, &w_y);
+	save_size_position (conf_file, &w_width, &w_height, &w_x, &w_y, paned_pos);
+	save_phrases_to_file ();
 }
 
 
@@ -780,6 +789,8 @@ void show_window (GtkStatusIcon *status_icon, GdkEvent *event, gpointer user_dat
 void get_size_position (GObject *gobject, GParamSpec *pspec, gpointer user_data)
 {
 	Widgets *widgets = (Widgets*)user_data;
+
+	paned_pos = gtk_paned_get_position (widgets->gstrans_paned);
 	gtk_window_get_size (GTK_WINDOW (widgets->window), &w_width, &w_height);
 	gtk_window_get_position (GTK_WINDOW (widgets->window), &w_x, &w_y);
 	//g_print ("\n%d %d %d %d", w_width, w_height, w_x, w_y);

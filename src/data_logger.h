@@ -16,9 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include "properties.h"
 
 #ifndef HEADER_LOGGER
 #define HEADER_LOGGER
 void store_phrase(char *orig, char *trans, char *body, int lang_src, int lang_dst);
-void size_phrases (int size);
+void load_settings_log (char *size, char *filename);
+void save_phrases_to_file (void);
+void clean_xml_file (char *filename);
+int convert_to_anki (char *file_in, char *file_out, favorites * favorite_log);
 #endif

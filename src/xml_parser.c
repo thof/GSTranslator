@@ -105,6 +105,29 @@ void save_config_file (const char* filename, shortcuts * shortcut,
 	xmlNodeSetContent (xpathObj->nodesetval->nodeTab[0], shortcut->name);
 	xmlXPathFreeObject(xpathObj);
 
+	// logger prefs
+	xpathObj = xmlXPathEvalExpression("//log_filename", xpathCtx);
+	if(xpathObj == NULL) {
+		fprintf(stderr,"Error: unable to evaluate xpath expression\n");
+		xmlXPathFreeContext(xpathCtx);
+		xmlFreeDoc(doc); 
+		return;
+	}
+	shortcut++;
+	xmlNodeSetContent (xpathObj->nodesetval->nodeTab[0], shortcut->name);
+	xmlXPathFreeObject(xpathObj);
+
+	xpathObj = xmlXPathEvalExpression("//save_frequency", xpathCtx);
+	if(xpathObj == NULL) {
+		fprintf(stderr,"Error: unable to evaluate xpath expression\n");
+		xmlXPathFreeContext(xpathCtx);
+		xmlFreeDoc(doc); 
+		return;
+	}
+	shortcut++;
+	xmlNodeSetContent (xpathObj->nodesetval->nodeTab[0], shortcut->name);
+	xmlXPathFreeObject(xpathObj);
+	                                  
 	// delete all favorites
 	xpathObj = xmlXPathEvalExpression("//favorite", xpathCtx);
 	if(xpathObj == NULL) {
@@ -202,7 +225,7 @@ void save_languages_to_xml (language * languages, int size)
 
 
 void save_size_position (const char* filename, int *w_width, int *w_height, 
-                         int *w_x, int *w_y)
+                         int *w_x, int *w_y, int paned_pos)
 {
 	xmlDocPtr doc;
 	xmlXPathContextPtr xpathCtx;
@@ -266,6 +289,17 @@ void save_size_position (const char* filename, int *w_width, int *w_height,
 		return;
 	}
 	sprintf(temp_val, "%d", *w_y);
+	xmlNodeSetContent (xpathObj->nodesetval->nodeTab[0], temp_val);
+	xmlXPathFreeObject(xpathObj);
+
+	xpathObj = xmlXPathEvalExpression("//paned_position", xpathCtx);
+	if(xpathObj == NULL) {
+		fprintf(stderr,"Error: unable to evaluate xpath expression\n");
+		xmlXPathFreeContext(xpathCtx);
+		xmlFreeDoc(doc); 
+		return;
+	}
+	sprintf(temp_val, "%d", paned_pos);
 	xmlNodeSetContent (xpathObj->nodesetval->nodeTab[0], temp_val);
 	xmlXPathFreeObject(xpathObj);
 	                                  

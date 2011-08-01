@@ -30,7 +30,7 @@ typedef struct
 
 typedef struct
 {
-	char name[128];
+	char name[512];
 } shortcuts;
 
 typedef struct

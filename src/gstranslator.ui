@@ -189,10 +189,11 @@
           </packing>
         </child>
         <child>
-          <object class="GtkPaned" id="paned1">
+          <object class="GtkPaned" id="gstrans_paned">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="orientation">vertical</property>
+            <property name="position">25</property>
             <child>
               <object class="GtkScrolledWindow" id="src_scrollbars">
                 <property name="visible">True</property>
