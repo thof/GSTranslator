@@ -46,6 +46,9 @@ typedef struct
 	GtkWidget *scan_label;
 	GtkWidget *about_dialog;
 	GtkWidget *gstrans_paned;
+	GtkWidget *trans_spinner;
+	gchar result[4096];
+	gchar src_text[4096];
 } Widgets;
 
 
@@ -53,22 +56,25 @@ GtkComboBoxText *cb_source_lang, *cb_dest_lang;
 NotifyNotification *notify_open;
 NotifyNotification *notify_test;
 gchar *translated_text, *summary, *normal_notify_key, *wide_notify_key;
-gchar *favorite_key, *favorite_key_backward, *text_to_trans;
+gchar *favorite_key, *favorite_key_backward;
 int lang_src, lang_dst, close_notify, favorite_index, favorite_size, deploy, temp, custom_signal;
-gint *w_width, *w_height, *w_x, *w_y, paned_pos;
+gint *w_width, *w_height, *w_x, *w_y, paned_pos, trans_method;
 int fav_src[20], fav_dst[20];
 int sizeof_dicts = 60;
 char recent_clip[4096], conf_file[512];
 size_t src_length;
 language dictionaries[60];
 int successor[60];
+gboolean thread_cond, clipboard_cond = FALSE;
 
+static gpointer thread_trans (gpointer user_data);
+gboolean print_result (gpointer user_data);
 void window_get_focus(GtkWidget *widget, GdkEvent *event, gpointer user_data);
 void normal_notify_handler(const char *keystring, gpointer user_data);
 void wide_notify_handler(const char *keystring, gpointer user_data);
 gboolean on_key_press(GtkWidget *widget, GdkEventKey *pKey, gpointer user_data);
 gboolean clean_src_textview(GtkWidget *widget, GdkEventKey* pKey, gpointer user_data);
-void translate (int method, char *input_text, gpointer user_data);
+void translate (gpointer user_data);
 void translate_from_textview (GtkButton *button, gpointer user_data);
 void compare_textview_clipboard (GtkClipboard *clipboard, 
                                 const char *received_text, gpointer user_data);
@@ -101,6 +107,12 @@ int main (int argc, char *argv[])
 	Widgets *widgets;
 	GtkTextBuffer *buffer_src, *buffer_dest;
 	GdkPixbuf *pixbuffer;
+	if(!g_thread_supported())
+	{
+		g_thread_init( NULL );
+	}
+    gdk_threads_init();
+    gdk_threads_enter();
 	
 	deploy = 0;
 	gtk_init (&argc, &argv);
@@ -146,6 +158,7 @@ int main (int argc, char *argv[])
 	widgets->scan_label = gtk_builder_get_object (builder, "scan_label");
 	widgets->about_dialog = gtk_builder_get_object (builder, "about_dialog");
 	widgets->gstrans_paned = gtk_builder_get_object (builder, "gstrans_paned");
+	widgets->trans_spinner = gtk_builder_get_object (builder, "trans_spinner");
 	
 	notify_init("GSTranslator");
 	notify_open = notify_notification_new ("", "", NULL);
@@ -172,18 +185,66 @@ int main (int argc, char *argv[])
 	g_signal_connect (widgets->dest, "focus-in-event", G_CALLBACK (get_focus_widget), widgets);
 	
 	g_object_unref (builder);
-
 	gtk_main ();
-
+	gdk_threads_leave();
+	
 	g_slice_free (Widgets, widgets);
 
 	return 0;
+}
+
+static gpointer thread_trans (gpointer user_data)
+{
+	gchar *result_trans, *json_out;
+	Widgets *widgets = (Widgets*)user_data;
+	
+	g_print ("\nText to trans: %s", widgets->src_text);
+	switch (trans_method)
+	{
+		case 0:
+			result_trans = getSJP(widgets->src_text); break;
+		case 1:
+			result_trans = getOneLook(widgets->src_text); break;
+		case 2:
+			json_out = getTranslation(widgets->src_text, 
+			                          dictionaries[lang_src].code, 
+			                          dictionaries[lang_dst].code);
+			result_trans = parse_translation(json_out, lang_src, lang_dst);
+			g_free (json_out);
+			break;
+	}
+	strncpy(widgets->result, result_trans, 4096);
+	g_free (result_trans);
+	thread_cond = FALSE;
+	gtk_spinner_stop (widgets->trans_spinner);
+	return NULL;
+}
+
+gboolean print_result (gpointer user_data)
+{
+	if(!thread_cond)
+	{
+		GtkTextBuffer *buffer_dest, *buffer_src;
+		Widgets *widgets = (Widgets*)user_data;
+		g_print ("\nWait for result");
+		buffer_dest = gtk_text_view_get_buffer (GTK_TEXT_VIEW (widgets->dest));
+		gtk_text_buffer_set_text (buffer_dest, widgets->result, -1);
+		if(clipboard_cond)
+		{
+			buffer_src = gtk_text_view_get_buffer (GTK_TEXT_VIEW (widgets->src));
+			gtk_text_buffer_set_text (buffer_src, widgets->src_text, -1);
+			clipboard_cond = FALSE;
+		}
+		return FALSE;
+	}
+	return TRUE;
 }
 
 
 void window_get_focus(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
 	Widgets *widgets = (Widgets*)user_data;
+	
 	gtk_widget_set_sensitive (widgets->scan_label, TRUE);
 	if(gtk_window_is_active  (widgets->window) && gtk_window_has_toplevel_focus (widgets->window))
 	{
@@ -224,9 +285,9 @@ int translate_normal_notify (GtkClipboard *clipboard,
 	else
 	{
 		//g_print("\n%s*", received_text);
-		translate_from_clipboard(received_text);
+		translate_from_clipboard (received_text);
 		notify_notification_update (notify_open, summary, translated_text, NULL);
-		notify_notification_show(notify_open, NULL);
+		notify_notification_show (notify_open, NULL);
 		g_free (summary);
 		g_free (translated_text);
 	}
@@ -251,7 +312,7 @@ int translate_wide_notify (GtkClipboard *clipboard,
 	}
 	else
 	{
-		translate_from_clipboard(received_text);
+		translate_from_clipboard (received_text);
 		notify_notification_update (notify_open, summary, translated_text, NULL);
 		notify_notification_show(notify_open, NULL);
 		close_notify = 0;
@@ -261,39 +322,32 @@ int translate_wide_notify (GtkClipboard *clipboard,
 }
 
 
-void translate (int method, char *input_text, gpointer user_data)
+void translate (gpointer user_data)
 {
+	GThread *thread;
+	GError *error;
 	Widgets *widgets = (Widgets*)user_data;
-	gchar *result_trans;
-	gchar *json_out;
-	GtkTextBuffer *buffer_src;
-	buffer_src = gtk_text_view_get_buffer (GTK_TEXT_VIEW (widgets->src));
-	GtkTextBuffer *buffer_dest;
-	buffer_dest = gtk_text_view_get_buffer (GTK_TEXT_VIEW (widgets->dest));
+
+	thread_cond = TRUE;
+	gtk_spinner_start (widgets->trans_spinner);
+	thread = g_thread_create(thread_trans, (gpointer) widgets, FALSE, &error );
+	if(!thread)
+	{
+		g_print( "Error: %s\n", error->message );
+		return;
+	}
 	if(strcmp(dictionaries[lang_dst].code, "sjp")==0)
 	{
-		result_trans = getSJP(input_text);
+		trans_method = 0;
 	}
 	else if(strcmp(dictionaries[lang_dst].code, "onelook")==0)
 	{
-		result_trans = getOneLook(input_text);
+		trans_method = 1;
 	}
 	else
 	{
-		/*g_print("\nLangs %s -> %s", dictionaries[lang_src].code, 
-		        dictionaries[lang_dst].code);*/
-		json_out = getTranslation(input_text, 
-		                                dictionaries[lang_src].code, 
-		                                dictionaries[lang_dst].code);
-		result_trans = parse_translation(json_out, lang_src, lang_dst);
-		g_free (json_out);
+		trans_method = 2;
 	}
-	gtk_text_buffer_set_text (buffer_dest, result_trans, -1);
-	if(method == 2)
-	{
-		gtk_text_buffer_set_text (buffer_src, input_text, -1);
-	}
-	g_free (result_trans);
 }
 
 
@@ -301,41 +355,51 @@ void translate_from_textview (GtkButton *button, gpointer user_data)
 {
 	GtkTextIter start, end;
 	GtkTextBuffer *buffer_src;
+    GError *error = NULL;
+	gchar *text_to_trans;
 	Widgets *widgets = (Widgets*)user_data;
-	
+
+	gdk_threads_add_timeout (100, print_result, (gpointer)user_data);
 	buffer_src = gtk_text_view_get_buffer (widgets->src);
 	gtk_text_buffer_get_iter_at_offset (buffer_src, &start, 0);
 	gtk_text_buffer_get_iter_at_offset (buffer_src, &end, -1);
 	text_to_trans = gtk_text_buffer_get_text (buffer_src, 
 	                                          &start, &end, FALSE);
-	src_length = strlen(text_to_trans);
+	//src_length = strlen(text_to_trans);
 	strcpy (recent_clip, text_to_trans);
-	recent_clip[src_length] = '\0';
-
-	translate (1, text_to_trans, user_data);
+	//recent_clip[src_length] = '\0';
+	
+	strncpy(widgets->src_text, text_to_trans, 4096);
+	translate (user_data);
+	g_free (text_to_trans);
 }
 
 
 
-void compare_textview_clipboard(GtkClipboard *clipboard, 
+void compare_textview_clipboard (GtkClipboard *clipboard, 
                                const char *received_text, gpointer user_data)
 {
 	GtkTextIter start, end;
-	char *result_trans;
+	gchar *text_to_trans;
 	GtkTextBuffer *buffer_src;
 	Widgets *widgets = (Widgets*)user_data;
+	
 	buffer_src = gtk_text_view_get_buffer (GTK_TEXT_VIEW (widgets->src));
 
 	gtk_text_buffer_get_iter_at_offset (buffer_src, &start, 0);
 	gtk_text_buffer_get_iter_at_offset (buffer_src, &end, -1);
 	
-	char *text_to_trans = gtk_text_buffer_get_text (buffer_src,
+	text_to_trans = gtk_text_buffer_get_text (buffer_src,
 	                                                &start, &end, FALSE);
 
 	if(received_text != NULL && strcmp(text_to_trans, received_text))
 	{
-		translate (2, received_text, user_data);
+		gdk_threads_add_timeout (100, print_result, (gpointer)user_data);
+		clipboard_cond = TRUE;
+		strncpy(widgets->src_text, received_text, 4096);
+		translate (user_data);
 	}
+	g_free (text_to_trans);
 }
 
 
@@ -474,8 +538,7 @@ gboolean clean_src_textview (GtkWidget *widget, GdkEventKey* pKey, gpointer user
 		{
 			case GDK_KEY_Return:
 				buffer_src = gtk_text_view_get_buffer (GTK_TEXT_VIEW (widgets->src));
-				gtk_text_buffer_set_text (buffer_src, text_to_trans, -1);
-				g_free (text_to_trans);
+				gtk_text_buffer_set_text (buffer_src, widgets->src_text, -1);
 				break;
 		}
 	}
