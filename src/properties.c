@@ -108,7 +108,7 @@ void add_all_hidden (GtkButton *button, gpointer user_data);
 void save_config (GtkButton *button, gpointer user_data);
 void exit_window (GtkButton *button, gpointer user_data);
 void choose_file_dialog (GtkButton *button,  gpointer user_data);
-void clean_xml (void);
+void clean_xml (GtkButton *button,  gpointer user_data);
 void convert (GtkButton *button,  gpointer user_data);
 
 int create_properties_window(char *conf_file_xml, int deploy, language *dictionaries)
@@ -193,7 +193,7 @@ int create_properties_window(char *conf_file_xml, int deploy, language *dictiona
 	widgets->output_file_entry = gtk_builder_get_object (builder, "output_file_entry");
 	widgets->save_freq_entry = gtk_builder_get_object (builder, "save_freq_entry");
 	widgets->clean_xml_button = gtk_builder_get_object (builder, "clean_xml_button");
-	g_signal_connect (widgets->clean_xml_button, "clicked", G_CALLBACK (clean_xml), NULL);
+	g_signal_connect (widgets->clean_xml_button, "clicked", G_CALLBACK (clean_xml), widgets);
 	widgets->convert_button = gtk_builder_get_object (builder, "convert_button");
 	g_signal_connect (widgets->convert_button, "clicked", G_CALLBACK (convert), widgets);
 	gtk_widget_set_sensitive (widgets->convert_button, FALSE);
@@ -738,18 +738,44 @@ void choose_file_dialog (GtkButton *button,  gpointer user_data)
 }
 
 
-void clean_xml()
+void clean_xml(GtkButton *button,  gpointer user_data)
 {
-	clean_xml_file (log_filename);
-}
-
-
-void exit_window (GtkButton *button,  gpointer user_data)
-{
+	GtkWidget *dialog;
+	int exit_code=2;
 	Widgets *widgets = (Widgets*)user_data;
-	gtk_main_quit ();
-	gtk_widget_destroy (widgets->window);
-	exit_code = 0;
+	
+	if(access(log_filename, R_OK)==0)
+	{
+		exit_code = clean_xml_file (log_filename);
+	}
+
+	if(exit_code==2)
+	{
+		dialog = gtk_message_dialog_new (widgets->window,
+		                                 GTK_DIALOG_MODAL,
+		                                 GTK_MESSAGE_WARNING,
+		                                 GTK_BUTTONS_CLOSE,
+		                                 "Noting to do");
+		gtk_message_dialog_format_secondary_text (dialog, "Cannot access to file");
+	}
+	if(exit_code==1)
+	{
+		dialog = gtk_message_dialog_new (widgets->window,
+		                                 GTK_DIALOG_MODAL,
+		                                 GTK_MESSAGE_ERROR,
+		                                 GTK_BUTTONS_CLOSE,
+		                                 "Input XML log file is not valid");
+	}
+	if(exit_code==0)
+	{
+		dialog = gtk_message_dialog_new (widgets->window,
+		                                 GTK_DIALOG_MODAL,
+		                                 GTK_MESSAGE_INFO,
+		                                 GTK_BUTTONS_CLOSE,
+		                                 "Success!");
+	}
+	gtk_dialog_run (GTK_DIALOG (dialog));
+	gtk_widget_destroy (dialog);
 }
 
 
@@ -758,7 +784,7 @@ void convert (GtkButton *button,  gpointer user_data)
 	GtkTreeIter l_iter;
 	GValue l_value = {0};
 	char *l_src, *l_dst;
-	int i, j;
+	int i, j, exit_code=2;
 	GtkWidget *dialog;
 	Widgets *widgets = (Widgets*)user_data;
 	
@@ -794,8 +820,44 @@ void convert (GtkButton *button,  gpointer user_data)
 				j++;
 			}
 			while(gtk_tree_model_iter_next (widgets->store_log, &l_iter));
+			exit_code = convert_to_anki (log_filename, output_filename, &favorite_log);
 		}
-
-		convert_to_anki (log_filename, output_filename, &favorite_log);
 	}
+
+	if(exit_code==2)
+	{
+		dialog = gtk_message_dialog_new (widgets->window,
+		                                 GTK_DIALOG_MODAL,
+		                                 GTK_MESSAGE_WARNING,
+		                                 GTK_BUTTONS_CLOSE,
+		                                 "Noting to do");
+		gtk_message_dialog_format_secondary_text (dialog, "Cannot access to file or list is empty");
+	}
+	if(exit_code==1)
+	{
+		dialog = gtk_message_dialog_new (widgets->window,
+		                                 GTK_DIALOG_MODAL,
+		                                 GTK_MESSAGE_ERROR,
+		                                 GTK_BUTTONS_CLOSE,
+		                                 "Input XML log file is not valid");
+	}
+	if(exit_code==0)
+	{
+		dialog = gtk_message_dialog_new (widgets->window,
+		                                 GTK_DIALOG_MODAL,
+		                                 GTK_MESSAGE_INFO,
+		                                 GTK_BUTTONS_CLOSE,
+		                                 "Success!");
+	}
+	gtk_dialog_run (GTK_DIALOG (dialog));
+	gtk_widget_destroy (dialog);
+}
+
+
+void exit_window (GtkButton *button,  gpointer user_data)
+{
+	Widgets *widgets = (Widgets*)user_data;
+	gtk_main_quit ();
+	gtk_widget_destroy (widgets->window);
+	exit_code = 0;
 }

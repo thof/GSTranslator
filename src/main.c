@@ -53,52 +53,51 @@ typedef struct
 
 
 GtkComboBoxText *cb_source_lang, *cb_dest_lang;
-NotifyNotification *notify_open;
-NotifyNotification *notify_test;
-gchar *translated_text, *summary, *normal_notify_key, *wide_notify_key;
-gchar *favorite_key, *favorite_key_backward;
-int lang_src, lang_dst, close_notify, favorite_index, favorite_size, deploy, temp, custom_signal;
+NotifyNotification *notify_open, *notify_test;
+gchar *translated_text, *summary;
+gchar *favorite_key, *favorite_key_backward, *normal_notify_key, *wide_notify_key;
+gint lang_src, lang_dst, close_notify, favorite_index, favorite_size, deploy, temp;
 gint *w_width, *w_height, *w_x, *w_y, paned_pos, trans_method;
-int fav_src[20], fav_dst[20];
-int sizeof_dicts = 60;
-char recent_clip[4096], conf_file[512];
+gint fav_src[32], fav_dst[32];
+gint sizeof_dicts = 60;
+gchar recent_clip[4096], conf_file[512];
 size_t src_length;
 language dictionaries[60];
-int successor[60];
+gint successor[60];
 gboolean thread_cond, clipboard_cond = FALSE;
 
 static gpointer thread_trans (gpointer user_data);
-gboolean print_result (gpointer user_data);
-void window_get_focus(GtkWidget *widget, GdkEvent *event, gpointer user_data);
-void normal_notify_handler(const char *keystring, gpointer user_data);
-void wide_notify_handler(const char *keystring, gpointer user_data);
-gboolean on_key_press(GtkWidget *widget, GdkEventKey *pKey, gpointer user_data);
-gboolean clean_src_textview(GtkWidget *widget, GdkEventKey* pKey, gpointer user_data);
-void translate (gpointer user_data);
-void translate_from_textview (GtkButton *button, gpointer user_data);
-void compare_textview_clipboard (GtkClipboard *clipboard, 
+static gboolean print_result (gpointer user_data);
+static void window_get_focus(GtkWidget *widget, GdkEvent *event, gpointer user_data);
+static void normal_notify_handler(const char *keystring, gpointer user_data);
+static void wide_notify_handler(const char *keystring, gpointer user_data);
+static gboolean on_key_press(GtkWidget *widget, GdkEventKey *pKey, gpointer user_data);
+static gboolean clean_src_textview(GtkWidget *widget, GdkEventKey* pKey, gpointer user_data);
+static void translate (gpointer user_data);
+static void translate_from_textview (GtkButton *button, gpointer user_data);
+static void compare_textview_clipboard (GtkClipboard *clipboard, 
                                 const char *received_text, gpointer user_data);
-int translate_normal_notify (GtkClipboard *clipboard, 
+static int translate_normal_notify (GtkClipboard *clipboard, 
                              const char *received_text, gpointer user_data);
-int translate_wide_notify (GtkClipboard *clipboard, 
+static int translate_wide_notify (GtkClipboard *clipboard, 
                            const char *received_text, gpointer user_data);
-void translate_from_clipboard (const char *received_text);
-void wide_notify_close (GtkWidget *widget, gpointer user_data);
-void change_src_lang (GtkWidget *widget, gpointer user_data);
-void change_dst_lang (GtkWidget *widget, gpointer user_data);
-void swap_lang (GtkWidget *widget, gpointer user_data);
-void init_config (gpointer user_data);
-void init_languages (gpointer user_data);
-void load_settings (gpointer user_data);
-void change_favorite (gpointer user_data);
-void change_favorite_back (gpointer user_data);
-void open_properties (GtkMenuItem *menuitem, gpointer user_data);
-int compare_ints (const void *a, const void *b);
-void destroy_window (GtkWidget *object, gpointer user_data); 
-void show_window (GtkStatusIcon *status_icon, GdkEvent *event, gpointer user_data);
-void get_size_position (GObject *gobject, GParamSpec *pspec, gpointer user_data);
-void get_focus_widget (GtkWidget *widget, GdkEvent *event, gpointer user_data);
-void open_about_dialog (GtkMenuItem *menuitem, gpointer user_data);
+static void translate_from_clipboard (const char *received_text);
+static void wide_notify_close (GtkWidget *widget, gpointer user_data);
+static void change_src_lang (GtkWidget *widget, gpointer user_data);
+static void change_dst_lang (GtkWidget *widget, gpointer user_data);
+static void swap_lang (GtkWidget *widget, gpointer user_data);
+static void init_config (gpointer user_data);
+static void init_languages (gpointer user_data);
+static void load_settings (gpointer user_data);
+static void change_favorite (gpointer user_data);
+static void change_favorite_back (gpointer user_data);
+static void open_properties (GtkMenuItem *menuitem, gpointer user_data);
+static int compare_ints (const void *a, const void *b);
+static void destroy_window (GtkWidget *object, gpointer user_data); 
+static void show_window (GtkStatusIcon *status_icon, GdkEvent *event, gpointer user_data);
+static void get_size_position (GObject *gobject, GParamSpec *pspec, gpointer user_data);
+static void get_focus_widget (GtkWidget *widget, GdkEvent *event, gpointer user_data);
+static void open_about_dialog (GtkMenuItem *menuitem, gpointer user_data);
 
 
 int main (int argc, char *argv[])
@@ -241,7 +240,7 @@ gboolean print_result (gpointer user_data)
 }
 
 
-void window_get_focus(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+void window_get_focus (GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
 	Widgets *widgets = (Widgets*)user_data;
 	
@@ -253,7 +252,7 @@ void window_get_focus(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 }
 
 
-void normal_notify_handler(const char *keystring, gpointer user_data) 
+void normal_notify_handler (const char *keystring, gpointer user_data) 
 {
 	Widgets *widgets = (Widgets*)user_data;
 	if(!close_notify)

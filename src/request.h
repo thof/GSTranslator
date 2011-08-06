@@ -21,5 +21,6 @@
 #define HEADER_REQUEST
 char *getTranslation(char *text_to_trans, char *lang_src_str, char *lang_dst_str);
 char *getSJP(char *text_to_trans);
+char *getOneLook(char *text_to_trans);
 char *parse_translation(char *json_out, int lang_src, int lang_dst);
 #endif

@@ -104,17 +104,15 @@ char *clean_output (char *string, char *pattern, size_t len)
 }
 
 
-char *to_lower_case(char string[])
+void to_lower_case (char string[])
 {
-	char result[strlen(string)];
 	int  i = 0;
 
 	while(string[i])
 	{
-		result[i] = tolower(string[i]);
+		string[i] = tolower(string[i]);
 		i++;
 	}
-	return result;
 }
 
 
@@ -478,11 +476,8 @@ char *parse_translation(gchar *json_out, int lang_src, int lang_dst)
 		to_save=1;
 		json_reader_read_element (reader, j); //2
 		json_reader_read_member (reader, "pos"); //3
-		//strcat(simple_trans, "\n\n");
 		strcat(body, "\n\n");
-		//strcat(simple_trans, json_reader_get_string_value (reader));
 		strcat(body, json_reader_get_string_value (reader));
-		//strcat(simple_trans, "\n");
 		strcat(body, "\n");
 		json_reader_end_member (reader); //3
 		json_reader_read_member (reader, "terms"); //4
@@ -490,11 +485,9 @@ char *parse_translation(gchar *json_out, int lang_src, int lang_dst)
 		for(i=0; i<json_reader_count_elements (reader); i++){
 			if(i!=0)
 			{
-				//strcat(simple_trans, ", ");
 				strcat(body, ", ");
 			}
 			json_reader_read_element (reader, i); //5
-			//strcat(simple_trans, json_reader_get_string_value (reader));
 			strcat(body, json_reader_get_string_value (reader));
 			json_reader_end_element (reader); //5
 
@@ -507,11 +500,14 @@ char *parse_translation(gchar *json_out, int lang_src, int lang_dst)
 	
 	g_object_unref (parser);
 
-	if(to_save || strcmp(to_lower_case(orig), to_lower_case(trans)))
+	to_lower_case (orig);
+	to_lower_case (trans);
+	g_print ("\n%s - %s %d", orig, trans, strcmp (orig, trans));
+	
+	if(to_save || strcmp (orig, trans))
 	{
 		store_phrase(orig, trans, body, lang_src, lang_dst);
 	}
-
 	strcat (simple_trans, body);
 	result = strdup (simple_trans);
 

@@ -59,7 +59,7 @@ char *replace_char (char *string, char pattern, char *replace, size_t len)
 }
 
 
-void print_phrases()
+void print_phrases ()
 {
 	int i;
 	for(i=0; i<current_index; i++)
@@ -75,7 +75,7 @@ void print_phrases()
 	g_print ("\n");
 }
 
-void store_phrase(char *orig, char *trans, char *body, int lang_src, int lang_dst)
+void store_phrase (char *orig, char *trans, char *body, int lang_src, int lang_dst)
 {
 	int i;
 
@@ -266,7 +266,7 @@ int convert_to_anki (char *file_in, char *file_out, favorites * favorite_log)
 				         xmlNodeGetContent (child_p), xmlNodeGetContent (child_p->next),
 				         body_temp);
 				g_print(phrases_out);
-				//break;
+				break;
 			}
 			favorite_log++;
 		}
@@ -286,7 +286,7 @@ int convert_to_anki (char *file_in, char *file_out, favorites * favorite_log)
 }
 
 
-void clean_xml_file (char *filename)
+int clean_xml_file (char *filename)
 {
 	xmlDocPtr doc;
 	xmlNodePtr node_p, child, child_p, next_p, temp;
@@ -298,14 +298,14 @@ void clean_xml_file (char *filename)
 	doc = xmlParseFile(filename);
 	if (doc == NULL) {
 		fprintf(stderr, "Error: unable to parse file \"%s\"\n", filename);
-		return;
+		return 1;
 	}
 
 	xpathCtx = xmlXPathNewContext(doc);
 	if(xpathCtx == NULL) {
 		fprintf(stderr,"Error: unable to create new XPath context\n");
 		xmlFreeDoc(doc); 
-		return;
+		return 1;
 	}
 
 	xpathObj = xmlXPathEvalExpression("/phrases/phrase", xpathCtx);
@@ -313,7 +313,7 @@ void clean_xml_file (char *filename)
 		fprintf(stderr,"Error: unable to evaluate xpath expression\n");
 		xmlXPathFreeContext(xpathCtx);
 		xmlFreeDoc(doc); 
-		return;
+		return 1;
 	}
 
 	node_p = xpathObj->nodesetval->nodeTab[0];
@@ -358,4 +358,6 @@ void clean_xml_file (char *filename)
 	xmlXPathFreeContext(xpathCtx);
 	xmlSaveFormatFile (filename, doc, 1);
 	xmlFreeDoc(doc);
+
+	return 0;
 }
