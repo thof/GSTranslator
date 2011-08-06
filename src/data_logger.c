@@ -92,9 +92,7 @@ void store_phrase (char *orig, char *trans, char *body, int lang_src, int lang_d
 	}
 	if(current_index>=size_p)
 	{
-		xmlInitParser();
 		save_phrases_to_file ();
-		xmlCleanupParser();
 		current_index=0;
 	}
 	phrases[current_index].src = lang_src;

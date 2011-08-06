@@ -198,8 +198,6 @@ int create_properties_window(char *conf_file_xml, int deploy, language *dictiona
 	g_signal_connect (widgets->convert_button, "clicked", G_CALLBACK (convert), widgets);
 	gtk_widget_set_sensitive (widgets->convert_button, FALSE);
 	
-	
-	xmlInitParser();
 	load_shortcuts (widgets);
 	init_favorites_list (widgets, builder);
 	init_hidden_list (widgets, builder);
@@ -207,9 +205,7 @@ int create_properties_window(char *conf_file_xml, int deploy, language *dictiona
 	gtk_entry_set_text (widgets->log_file_entry, log_filename);
 	gtk_entry_set_text (widgets->save_freq_entry, 
 	                    execute_xpath_expression (conf_file, "/config/save_frequency", NULL, 0));
-	xmlCleanupParser();
 	
-
 	gtk_widget_show (widgets->window);
 	gtk_main ();
 

@@ -367,7 +367,6 @@ char *getOneLook(char *text_to_trans)
 			strcpy (temp_trans, "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<OLResponse>\n");
 			strcat (temp_trans, strstr(body.ptr, "<OLQuickDef>"));	
 			
-			xmlInitParser();
 			strcpy (trans_buffer, text_to_trans);
 			strcat (trans_buffer, execute_xpath_expression (temp_trans, "//OLQuickDef", NULL, body.len));
 			strcat (trans_buffer, "\nPhrases:");
@@ -380,7 +379,6 @@ char *getOneLook(char *text_to_trans)
 				strcpy(trans_buffer, clean_output (&trans_buffer, "&lt;i&gt;", strlen(trans_buffer)));
 				strcpy(trans_buffer, clean_output (&trans_buffer, "&lt;/i&gt;", strlen(trans_buffer)));
 			}
-			xmlCleanupParser();
 			//g_print (trans_buffer);
 		}	
 		else

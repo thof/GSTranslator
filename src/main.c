@@ -166,6 +166,7 @@ int main (int argc, char *argv[])
 	//g_signal_connect (widgets->status_icon, "button_press_event", G_CALLBACK (show_window), widgets);
 	gtk_window_set_icon(widgets->window, pixbuffer);
 	keybinder_init ();
+	xmlInitParser ();
 	init_config (widgets);
 	init_languages (widgets);
 	
@@ -599,7 +600,6 @@ void init_config (gpointer user_data)
 
 	Widgets *widgets = (Widgets*)user_data;
 	
-	xmlInitParser();
 	strcpy(temp_str, execute_xpath_expression (conf_file, "//default_width", NULL, 0));
 	x = atoi(temp_str);
 	strcpy(temp_str, execute_xpath_expression (conf_file, "//default_height", NULL, 0));
@@ -613,7 +613,6 @@ void init_config (gpointer user_data)
 	strcpy(temp_str, execute_xpath_expression (conf_file, "//paned_position", NULL, 0));
 	x = atoi(temp_str);
 	gtk_paned_set_position (widgets->gstrans_paned, x);
-	xmlCleanupParser();
 }
 
 
@@ -627,10 +626,8 @@ void init_languages (gpointer user_data)
 	
 	deploy ? sprintf (fr, PACKAGE_DATA_DIR"/gstranslator/config/languages.xml") :
 		sprintf (fr, "src/config/languages.xml");
-	xmlInitParser();
 	load_languages_from_xml (fr, &dictionaries, sizeof_dicts);
 	//save_languages_to_xml (&dictionaries, sizeof_dicts);
-	xmlCleanupParser();
 	load_settings (user_data);
 }
 
@@ -649,7 +646,6 @@ void load_settings (gpointer user_data)
 	gtk_combo_box_text_remove_all (cb_source_lang);
 	gtk_combo_box_text_remove_all (cb_dest_lang);
 
-	xmlInitParser();
 	
 	normal_notify_key = execute_xpath_expression (conf_file, "//normal_notify_hotkey", NULL, 0);
 	wide_notify_key = execute_xpath_expression (conf_file, "//wide_notify_hotkey", NULL, 0);
@@ -681,8 +677,6 @@ void load_settings (gpointer user_data)
 		temp_char = execute_xpath_expression (conf_file, lang_temp, NULL, 0);
 		hidden_array[i] = atoi (temp_char);
 	}
-	
-	xmlCleanupParser();
 	load_settings_log (execute_xpath_expression (conf_file, "/config/save_frequency", NULL, 0),
 	                   execute_xpath_expression (conf_file, "/config/log_filename", NULL, 0));
 
@@ -838,6 +832,7 @@ void destroy_window (GtkWidget *object, gpointer user_data)
 	//gtk_widget_hide (object);
 	save_size_position (conf_file, &w_width, &w_height, &w_x, &w_y, paned_pos);
 	save_phrases_to_file ();
+	xmlCleanupParser ();
 }
 
 
