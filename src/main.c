@@ -246,7 +246,7 @@ void window_get_focus (GtkWidget *widget, GdkEvent *event, gpointer user_data)
 	Widgets *widgets = (Widgets*)user_data;
 	
 	gtk_widget_set_sensitive (widgets->scan_label, TRUE);
-	if(gtk_window_is_active  (widgets->window) && gtk_window_has_toplevel_focus (widgets->window))
+	if(gtk_toggle_button_get_active (widgets->scan_label) && gtk_window_is_active  (widgets->window) && gtk_window_has_toplevel_focus (widgets->window))
 	{
 		gtk_clipboard_request_text (widgets->clipboard, compare_textview_clipboard, user_data);
 	}
@@ -556,7 +556,7 @@ void init_config (gpointer user_data)
 	strcpy(conf_file, conf_dir);
 	strcat(conf_file, "/config.xml\0");
 
-	if(access(conf_dir, R_OK)!=0)
+	if(access(conf_file, R_OK)!=0)
 	{
 		char ch;
 		FILE *fs,*ft;
@@ -853,6 +853,7 @@ void get_size_position (GObject *gobject, GParamSpec *pspec, gpointer user_data)
 	//g_print ("\n%d %d %d %d", w_width, w_height, w_x, w_y);
 	gtk_main_quit ();
 }
+
 
 void get_focus_widget (GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
