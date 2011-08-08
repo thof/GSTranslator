@@ -1,2 +1,9 @@
+GSTranslator 0.3 (released 8-Aug-2011)
 
-
+- Phrases logger: allows saving to a file translated phrases. It uses XML format
+- XML->txt Converter: simple tool that converts log file to Anki's readable text file
+- UI improvements: "Scan" switcher, mnemonics, threads (UI shouldn't freeze anymore), GtkPaned, status spinner etc.
+- Rewrites "Properties"
+- KDE4: fixed bugs that caused segfault in KDE4. Since this version GSTranslator works with KDE4
+- Various parts of the code were cleaned up
+- Many minor changes (memory management, code etc.) that should increase stability

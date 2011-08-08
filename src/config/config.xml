@@ -8,33 +8,38 @@
   <wide_notify_hotkey>&lt;Ctrl&gt;9</wide_notify_hotkey>
   <favorite_hotkey>&lt;Ctrl&gt;8</favorite_hotkey>
   <favorite_hotkey_back>&lt;Ctrl&gt;asterisk</favorite_hotkey_back>
+  <save_frequency>5</save_frequency>
+  <paned_position>35</paned_position>
   <favorite>
     <src_lang>16</src_lang>
     <dst_lang>43</dst_lang>
+  </favorite>
+  <favorite>
+    <src_lang>16</src_lang>
+    <dst_lang>27</dst_lang>
+  </favorite>
+  <favorite>
+    <src_lang>16</src_lang>
+    <dst_lang>32</dst_lang>
   </favorite>
   <favorite>
     <src_lang>43</src_lang>
     <dst_lang>16</dst_lang>
   </favorite>
   <favorite>
-    <src_lang>43</src_lang>
-    <dst_lang>58</dst_lang>
+    <src_lang>20</src_lang>
+    <dst_lang>16</dst_lang>
   </favorite>
   <favorite>
     <src_lang>16</src_lang>
     <dst_lang>59</dst_lang>
   </favorite>
   <favorite>
-    <src_lang>23</src_lang>
-    <dst_lang>16</dst_lang>
-  </favorite>
-  <favorite>
-    <src_lang>16</src_lang>
-    <dst_lang>23</dst_lang>
+    <src_lang>43</src_lang>
+    <dst_lang>58</dst_lang>
   </favorite>
   <hidden>0</hidden>
   <hidden>1</hidden>
-  <hidden>2</hidden>
   <hidden>3</hidden>
   <hidden>4</hidden>
   <hidden>5</hidden>
@@ -51,18 +56,16 @@
   <hidden>17</hidden>
   <hidden>18</hidden>
   <hidden>19</hidden>
-  <hidden>20</hidden>
   <hidden>21</hidden>
   <hidden>22</hidden>
+  <hidden>23</hidden>
   <hidden>24</hidden>
   <hidden>25</hidden>
   <hidden>26</hidden>
-  <hidden>27</hidden>
   <hidden>28</hidden>
   <hidden>29</hidden>
   <hidden>30</hidden>
   <hidden>31</hidden>
-  <hidden>32</hidden>
   <hidden>33</hidden>
   <hidden>34</hidden>
   <hidden>35</hidden>
