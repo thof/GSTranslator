@@ -36,7 +36,9 @@ void load_languages_from_xml (char *filename, language * dictionaries, int sizeo
 char *execute_xpath_expression (const char* filename, const xmlChar* xpathExpr,
                                 const xmlChar* nsList, int size);
 char *print_xpath_nodes (xmlNodeSetPtr nodes);
-int *get_xpath_nodes_size (const char* filename, const xmlChar* xpathExpr,
+int get_xpath_nodes_size (const char* filename, const xmlChar* xpathExpr,
                            const xmlChar* nsList);
-int *size_xpath_nodes (xmlNodeSetPtr nodes);
+int size_xpath_nodes (xmlNodeSetPtr nodes);
+void new_child_node (const char* filename, const xmlChar* xpathExpr,
+                     const xmlChar *name, const xmlChar *content);
 #endif

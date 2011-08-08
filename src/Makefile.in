@@ -276,7 +276,8 @@ top_srcdir = @top_srcdir@
 SUBDIRS = \
 	config \
 	kbflags \
-	icon
+	icon \
+	desktop
 
 uidir = $(datadir)/gstranslator/ui
 ui_DATA = gstranslator.ui \

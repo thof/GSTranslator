@@ -73,8 +73,12 @@ am__nobase_list = $(am__nobase_strip_setup); \
 am__base_list = \
   sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
   sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
-am__installdirs = "$(DESTDIR)$(icondir)"
-DATA = $(icon_DATA)
+am__installdirs = "$(DESTDIR)$(icon128dir)" "$(DESTDIR)$(icon16dir)" \
+	"$(DESTDIR)$(icon22dir)" "$(DESTDIR)$(icon256dir)" \
+	"$(DESTDIR)$(icon32dir)" "$(DESTDIR)$(icon48dir)" \
+	"$(DESTDIR)$(icon64dir)"
+DATA = $(icon128_DATA) $(icon16_DATA) $(icon22_DATA) $(icon256_DATA) \
+	$(icon32_DATA) $(icon48_DATA) $(icon64_DATA)
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
@@ -196,17 +200,29 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-icondir = $(datadir)/gstranslator/icon
-icon_DATA = \
-	hi16-app-translator.png\
-	hi22-app-translator.png\
-	hi32-app-translator.png\
-	hi48-app-translator.png\
-	hi64-app-translator.png\
-	hi128-app-translator.png\
-	hi256-app-translator.png
+icon16dir = $(datadir)/icons/hicolor/16x16/apps/
+icon22dir = $(datadir)/icons/hicolor/22x22/apps/
+icon32dir = $(datadir)/icons/hicolor/32x32/apps/
+icon48dir = $(datadir)/icons/hicolor/48x48/apps/
+icon64dir = $(datadir)/icons/hicolor/64x64/apps/
+icon128dir = $(datadir)/icons/hicolor/128x128/apps/
+icon256dir = $(datadir)/icons/hicolor/256x256/apps/
+icon16_DATA = 16x16/gstranslator.png
+icon22_DATA = 22x22/gstranslator.png
+icon32_DATA = 32x32/gstranslator.png
+icon48_DATA = 48x48/gstranslator.png
+icon64_DATA = 64x64/gstranslator.png
+icon128_DATA = 128x128/gstranslator.png
+icon256_DATA = 256x256/gstranslator.png
+EXTRA_DIST = \
+	$(icon16_DATA) \
+	$(icon22_DATA) \
+	$(icon32_DATA) \
+	$(icon48_DATA) \
+	$(icon64_DATA) \
+	$(icon128_DATA) \
+	$(icon256_DATA)
 
-EXTRA_DIST = $(icon_DATA)
 all: all-am
 
 .SUFFIXES:
@@ -246,26 +262,146 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
-install-iconDATA: $(icon_DATA)
+install-icon128DATA: $(icon128_DATA)
 	@$(NORMAL_INSTALL)
-	test -z "$(icondir)" || $(MKDIR_P) "$(DESTDIR)$(icondir)"
-	@list='$(icon_DATA)'; test -n "$(icondir)" || list=; \
+	test -z "$(icon128dir)" || $(MKDIR_P) "$(DESTDIR)$(icon128dir)"
+	@list='$(icon128_DATA)'; test -n "$(icon128dir)" || list=; \
 	for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  echo "$$d$$p"; \
 	done | $(am__base_list) | \
 	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(icondir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(icondir)" || exit $$?; \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(icon128dir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(icon128dir)" || exit $$?; \
 	done
 
-uninstall-iconDATA:
+uninstall-icon128DATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(icon_DATA)'; test -n "$(icondir)" || list=; \
+	@list='$(icon128_DATA)'; test -n "$(icon128dir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	test -n "$$files" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(icondir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(icondir)" && rm -f $$files
+	echo " ( cd '$(DESTDIR)$(icon128dir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(icon128dir)" && rm -f $$files
+install-icon16DATA: $(icon16_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(icon16dir)" || $(MKDIR_P) "$(DESTDIR)$(icon16dir)"
+	@list='$(icon16_DATA)'; test -n "$(icon16dir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(icon16dir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(icon16dir)" || exit $$?; \
+	done
+
+uninstall-icon16DATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(icon16_DATA)'; test -n "$(icon16dir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(icon16dir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(icon16dir)" && rm -f $$files
+install-icon22DATA: $(icon22_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(icon22dir)" || $(MKDIR_P) "$(DESTDIR)$(icon22dir)"
+	@list='$(icon22_DATA)'; test -n "$(icon22dir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(icon22dir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(icon22dir)" || exit $$?; \
+	done
+
+uninstall-icon22DATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(icon22_DATA)'; test -n "$(icon22dir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(icon22dir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(icon22dir)" && rm -f $$files
+install-icon256DATA: $(icon256_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(icon256dir)" || $(MKDIR_P) "$(DESTDIR)$(icon256dir)"
+	@list='$(icon256_DATA)'; test -n "$(icon256dir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(icon256dir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(icon256dir)" || exit $$?; \
+	done
+
+uninstall-icon256DATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(icon256_DATA)'; test -n "$(icon256dir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(icon256dir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(icon256dir)" && rm -f $$files
+install-icon32DATA: $(icon32_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(icon32dir)" || $(MKDIR_P) "$(DESTDIR)$(icon32dir)"
+	@list='$(icon32_DATA)'; test -n "$(icon32dir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(icon32dir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(icon32dir)" || exit $$?; \
+	done
+
+uninstall-icon32DATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(icon32_DATA)'; test -n "$(icon32dir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(icon32dir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(icon32dir)" && rm -f $$files
+install-icon48DATA: $(icon48_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(icon48dir)" || $(MKDIR_P) "$(DESTDIR)$(icon48dir)"
+	@list='$(icon48_DATA)'; test -n "$(icon48dir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(icon48dir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(icon48dir)" || exit $$?; \
+	done
+
+uninstall-icon48DATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(icon48_DATA)'; test -n "$(icon48dir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(icon48dir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(icon48dir)" && rm -f $$files
+install-icon64DATA: $(icon64_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(icon64dir)" || $(MKDIR_P) "$(DESTDIR)$(icon64dir)"
+	@list='$(icon64_DATA)'; test -n "$(icon64dir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(icon64dir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(icon64dir)" || exit $$?; \
+	done
+
+uninstall-icon64DATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(icon64_DATA)'; test -n "$(icon64dir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(icon64dir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(icon64dir)" && rm -f $$files
 tags: TAGS
 TAGS:
 
@@ -307,7 +443,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(icondir)"; do \
+	for dir in "$(DESTDIR)$(icon128dir)" "$(DESTDIR)$(icon16dir)" "$(DESTDIR)$(icon22dir)" "$(DESTDIR)$(icon256dir)" "$(DESTDIR)$(icon32dir)" "$(DESTDIR)$(icon48dir)" "$(DESTDIR)$(icon64dir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -355,7 +491,9 @@ info: info-am
 
 info-am:
 
-install-data-am: install-iconDATA
+install-data-am: install-icon128DATA install-icon16DATA \
+	install-icon22DATA install-icon256DATA install-icon32DATA \
+	install-icon48DATA install-icon64DATA
 
 install-dvi: install-dvi-am
 
@@ -399,7 +537,9 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-iconDATA
+uninstall-am: uninstall-icon128DATA uninstall-icon16DATA \
+	uninstall-icon22DATA uninstall-icon256DATA \
+	uninstall-icon32DATA uninstall-icon48DATA uninstall-icon64DATA
 
 .MAKE: install-am install-strip
 
@@ -408,12 +548,17 @@ uninstall-am: uninstall-iconDATA
 	dvi-am html html-am info info-am install install-am \
 	install-data install-data-am install-dvi install-dvi-am \
 	install-exec install-exec-am install-html install-html-am \
-	install-iconDATA install-info install-info-am install-man \
+	install-icon128DATA install-icon16DATA install-icon22DATA \
+	install-icon256DATA install-icon32DATA install-icon48DATA \
+	install-icon64DATA install-info install-info-am install-man \
 	install-pdf install-pdf-am install-ps install-ps-am \
 	install-strip installcheck installcheck-am installdirs \
 	maintainer-clean maintainer-clean-generic mostlyclean \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	uninstall uninstall-am uninstall-iconDATA
+	uninstall uninstall-am uninstall-icon128DATA \
+	uninstall-icon16DATA uninstall-icon22DATA \
+	uninstall-icon256DATA uninstall-icon32DATA \
+	uninstall-icon48DATA uninstall-icon64DATA
 
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

@@ -113,7 +113,7 @@ int main (int argc, char *argv[])
     gdk_threads_init();
     gdk_threads_enter();
 	
-	deploy = 0;
+	deploy = 1;
 	gtk_init (&argc, &argv);
 	recent_clip[0] = '\0';
 	close_notify = 1;
@@ -125,13 +125,13 @@ int main (int argc, char *argv[])
 		gtk_builder_add_from_file (builder, 
 		                           PACKAGE_DATA_DIR"/gstranslator/ui/gstranslator.ui", 
 		                           NULL);
-		pixbuffer = gdk_pixbuf_new_from_file(PACKAGE_DATA_DIR"/gstranslator/icon/hi64-app-translator.png",
+		pixbuffer = gdk_pixbuf_new_from_file(PACKAGE_DATA_DIR"/icons/hicolor/128x128/apps/gstranslator.png",
 		                                     NULL);
 	}
 	else
 	{
 		gtk_builder_add_from_file (builder, "src/gstranslator.ui", NULL);
-		pixbuffer = gdk_pixbuf_new_from_file("src/icon/hi64-app-translator.png", NULL);
+		pixbuffer = gdk_pixbuf_new_from_file("src/icon/128x128/gstranslator.png", NULL);
 	}
 
 	widgets = g_slice_new (Widgets);
@@ -198,7 +198,7 @@ static gpointer thread_trans (gpointer user_data)
 	gchar *result_trans, *json_out;
 	Widgets *widgets = (Widgets*)user_data;
 	
-	g_print ("\nText to trans: %s", widgets->src_text);
+	//g_print ("\nText to trans: %s", widgets->src_text);
 	switch (trans_method)
 	{
 		case 0:
@@ -226,7 +226,7 @@ gboolean print_result (gpointer user_data)
 	{
 		GtkTextBuffer *buffer_dest, *buffer_src;
 		Widgets *widgets = (Widgets*)user_data;
-		g_print ("\nWait for result");
+		//g_print ("\nWait for result");
 		buffer_dest = gtk_text_view_get_buffer (GTK_TEXT_VIEW (widgets->dest));
 		gtk_text_buffer_set_text (buffer_dest, widgets->result, -1);
 		if(clipboard_cond)
@@ -246,7 +246,8 @@ void window_get_focus (GtkWidget *widget, GdkEvent *event, gpointer user_data)
 	Widgets *widgets = (Widgets*)user_data;
 	
 	gtk_widget_set_sensitive (widgets->scan_label, TRUE);
-	if(gtk_toggle_button_get_active (widgets->scan_label) && gtk_window_is_active  (widgets->window) && gtk_window_has_toplevel_focus (widgets->window))
+	if(gtk_toggle_button_get_active (widgets->scan_label) && gtk_window_is_active  (widgets->window) 
+	   && gtk_window_has_toplevel_focus (widgets->window))
 	{
 		gtk_clipboard_request_text (widgets->clipboard, compare_textview_clipboard, user_data);
 	}
@@ -560,7 +561,6 @@ void init_config (gpointer user_data)
 	{
 		char ch;
 		FILE *fs,*ft;
-		//g_print("\nCreate dir %s", conf_dir);
 		mkdir(conf_dir, 0755);
 		if(deploy)
 		{
@@ -599,7 +599,21 @@ void init_config (gpointer user_data)
 	}
 
 	Widgets *widgets = (Widgets*)user_data;
-	
+
+	if(!get_xpath_nodes_size (conf_file, "//paned_position", NULL))
+	{
+		new_child_node (conf_file, "/config", "paned_position", "35");
+	}
+	if(!get_xpath_nodes_size (conf_file, "//log_filename", NULL))
+	{
+		char temp_log_filename[512];
+		sprintf (temp_log_filename, "%s/log_phrases.xml", conf_dir);
+		new_child_node (conf_file, "/config", "log_filename", temp_log_filename);
+	}
+	if(!get_xpath_nodes_size (conf_file, "//save_frequency", NULL))
+	{
+		new_child_node (conf_file, "/config", "save_frequency", "5");
+	}
 	strcpy(temp_str, execute_xpath_expression (conf_file, "//default_width", NULL, 0));
 	x = atoi(temp_str);
 	strcpy(temp_str, execute_xpath_expression (conf_file, "//default_height", NULL, 0));

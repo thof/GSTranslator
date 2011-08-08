@@ -500,7 +500,7 @@ char *parse_translation(gchar *json_out, int lang_src, int lang_dst)
 
 	to_lower_case (orig);
 	to_lower_case (trans);
-	g_print ("\n%s - %s %d", orig, trans, strcmp (orig, trans));
+	//g_print ("\n%s - %s %d", orig, trans, strcmp (orig, trans));
 	
 	if(to_save || strcmp (orig, trans))
 	{

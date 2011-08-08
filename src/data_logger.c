@@ -108,7 +108,7 @@ void store_phrase (char *orig, char *trans, char *body, int lang_src, int lang_d
 		strcpy(phrases[current_index].body, body+2);
 	}
 	current_index++;
-	print_phrases();
+	//print_phrases();
 }
 
 
@@ -172,15 +172,15 @@ void save_phrases_to_file ()
 	}
 	for(i=0; i<current_index; i++)
 	{
-		child = xmlNewChild (parent, NULL, "phrase", NULL);
+		child = xmlNewTextChild (parent, NULL, "phrase", NULL);
 
 		sprintf(temp, "%d",phrases[i].src);
-		xmlNewChild (child, NULL, "src", temp);
+		xmlNewTextChild (child, NULL, "src", temp);
 		sprintf(temp, "%d", phrases[i].dst);
-		xmlNewChild (child, NULL, "dst", temp);
-		xmlNewChild (child, NULL, "orig", phrases[i].orig);
-		xmlNewChild (child, NULL, "trans", phrases[i].trans);
-		xmlNewChild (child, NULL, "body", phrases[i].body);
+		xmlNewTextChild (child, NULL, "dst", temp);
+		xmlNewTextChild (child, NULL, "orig", phrases[i].orig);
+		xmlNewTextChild (child, NULL, "trans", phrases[i].trans);
+		xmlNewTextChild (child, NULL, "body", phrases[i].body);
 	}
 
 	if(cond)
@@ -221,7 +221,7 @@ int convert_to_anki (char *file_in, char *file_out, favorites * favorite_log)
 
 	fseek(file_temp, 0, SEEK_END);
 	size = ftell(file_temp);
-	g_print ("\n%d", size);
+	//g_print ("\n%d", size);
 	fclose(file_temp);
 	char phrases_out[size];
 	
@@ -263,7 +263,7 @@ int convert_to_anki (char *file_in, char *file_out, favorites * favorite_log)
 				sprintf (phrases_out + strlen (phrases_out), "\n%s\t<b>%s</b></br></br><font size=\"2\">%s</font>",
 				         xmlNodeGetContent (child_p), xmlNodeGetContent (child_p->next),
 				         body_temp);
-				g_print(phrases_out);
+				//g_print(phrases_out);
 				break;
 			}
 			favorite_log++;
@@ -319,11 +319,11 @@ int clean_xml_file (char *filename)
 	do
 	{
 		child_p = node_p->children;
-		g_print ("\n%s %s %s %s", xmlNodeGetContent (child_p), 
+		/*g_print ("\n%s %s %s %s", xmlNodeGetContent (child_p), 
 			         xmlNodeGetContent (child_p->next), 
 			         xmlNodeGetContent (child_p->next->next),
 			         xmlNodeGetContent (child_p->next->next->next)
-			         );
+			         );*/
 		next_p = node_p->next;
 		do
 		{
@@ -333,11 +333,11 @@ int clean_xml_file (char *filename)
 				break;
 			}
 			child=(next_p->children);
-			g_print ("\n***%s %s %s %s", xmlNodeGetContent (child), 
+			/*g_print ("\n***%s %s %s %s", xmlNodeGetContent (child), 
 			         xmlNodeGetContent (child->next), 
 			         xmlNodeGetContent (child->next->next),
 			         xmlNodeGetContent (child->next->next->next)
-			         );
+			         );*/
 			if(strcmp(xmlNodeGetContent (child), xmlNodeGetContent (child_p))==0 &&
 			   strcmp(xmlNodeGetContent (child->next), xmlNodeGetContent (child_p->next))==0 &&
 			   strcmp(xmlNodeGetContent (child->next->next), xmlNodeGetContent (child_p->next->next))==0

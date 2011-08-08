@@ -33,9 +33,9 @@
 char *execute_xpath_expression (const char* filename, const xmlChar* xpathExpr,
                                 const xmlChar* nsList, int size);
 char *print_xpath_nodes (xmlNodeSetPtr nodes);
-int *get_xpath_nodes_size (const char* filename, const xmlChar* xpathExpr,
+int get_xpath_nodes_size (const char* filename, const xmlChar* xpathExpr,
                            const xmlChar* nsList);
-int *size_xpath_nodes (xmlNodeSetPtr nodes);
+int size_xpath_nodes (xmlNodeSetPtr nodes);
 
 void save_config_file (const char* filename, shortcuts * shortcut, 
                        favorites * favorite, hidden_dicts * h_dict)
@@ -170,13 +170,13 @@ void save_config_file (const char* filename, shortcuts * shortcut,
 	// add favorites
 	do
 	{
-		parent = xmlNewChild (xpathObj->nodesetval->nodeTab[0], NULL, "favorite", NULL);
+		parent = xmlNewTextChild (xpathObj->nodesetval->nodeTab[0], NULL, "favorite", NULL);
 		sprintf(temp_val, "%d", favorite->src_code);
 		//g_print("\nval = %s", temp_val);
-		xmlNewChild (parent, NULL, "src_lang", temp_val);
+		xmlNewTextChild (parent, NULL, "src_lang", temp_val);
 		sprintf(temp_val, "%d", favorite->dst_code);
 		//g_print("\nval = %s", temp_val);
-		xmlNewChild (parent, NULL, "dst_lang", temp_val);
+		xmlNewTextChild (parent, NULL, "dst_lang", temp_val);
 		favorite++;
 	}
 	while(favorite->src_code != NULL);
@@ -184,7 +184,7 @@ void save_config_file (const char* filename, shortcuts * shortcut,
 	do
 	{
 		sprintf(temp_val, "%d", h_dict->code);
-		parent = xmlNewChild (xpathObj->nodesetval->nodeTab[0], NULL, "hidden", temp_val);
+		parent = xmlNewTextChild (xpathObj->nodesetval->nodeTab[0], NULL, "hidden", temp_val);
 		h_dict++;
 	}
 	while(h_dict->code != NULL);
@@ -212,10 +212,10 @@ void save_languages_to_xml (language * languages, int size)
 
 	for(i=0; i<size; i++)
 	{
-		child = xmlNewChild (parent, NULL, "lang", NULL);
-		xmlNewChild (child, NULL, "name", languages->name);
-		xmlNewChild (child, NULL, "code", languages->code);
-		xmlNewChild (child, NULL, "flag", languages->flag);
+		child = xmlNewTextChild (parent, NULL, "lang", NULL);
+		xmlNewTextChild (child, NULL, "name", languages->name);
+		xmlNewTextChild (child, NULL, "code", languages->code);
+		xmlNewTextChild (child, NULL, "flag", languages->flag);
 		languages++;
 	}
 
@@ -430,12 +430,67 @@ char *print_xpath_nodes(xmlNodeSetPtr nodes)
 }
 
 
-int *get_xpath_nodes_size(const char* filename, const xmlChar* xpathExpr, const xmlChar* nsList) 
+int get_xpath_nodes_size(const char* filename, const xmlChar* xpathExpr, 
+                          const xmlChar* nsList) 
 {
 	xmlDocPtr doc;
 	xmlXPathContextPtr xpathCtx;
 	xmlXPathObjectPtr xpathObj;
 
+	/* Load XML document */
+	doc = xmlParseFile(filename);
+	if (doc == NULL) {
+		fprintf(stderr, "Error: unable to parse file \"%s\"\n", filename);
+		return -1;
+	}
+
+	/* Create xpath evaluation context */
+	xpathCtx = xmlXPathNewContext(doc);
+	if(xpathCtx == NULL) {
+		fprintf(stderr,"Error: unable to create new XPath context\n");
+		xmlFreeDoc(doc); 
+		return -1;
+	}
+
+	/* Evaluate xpath expression */
+	xpathObj = xmlXPathEvalExpression(xpathExpr, xpathCtx);
+	if(xpathObj == NULL) {
+		fprintf(stderr,"Error: unable to evaluate xpath expression \"%s\"\n", xpathExpr);
+		xmlXPathFreeContext(xpathCtx);
+		xmlFreeDoc(doc); 
+		return 0;
+	}
+
+	/* Print results */
+	int size = size_xpath_nodes(xpathObj->nodesetval);
+	//char *content = strdup(cont);
+
+	/* Cleanup */
+	xmlXPathFreeObject(xpathObj);
+	xmlXPathFreeContext(xpathCtx); 
+	xmlFreeDoc(doc); 
+
+	return size;
+}
+
+
+int size_xpath_nodes(xmlNodeSetPtr nodes) {
+	int size;
+
+	size = (nodes) ? nodes->nodeNr : 0;
+
+	return size;
+}
+
+
+void new_child_node (const char* filename, const xmlChar* xpathExpr,
+                     const xmlChar *name, const xmlChar *content)
+{
+	xmlDocPtr doc;
+	xmlXPathContextPtr xpathCtx;
+	xmlXPathObjectPtr xpathObj;
+
+	xmlKeepBlanksDefault(0);
 	/* Load XML document */
 	doc = xmlParseFile(filename);
 	if (doc == NULL) {
@@ -459,24 +514,9 @@ int *get_xpath_nodes_size(const char* filename, const xmlChar* xpathExpr, const 
 		xmlFreeDoc(doc); 
 		return;
 	}
-
-	/* Print results */
-	int size = size_xpath_nodes(xpathObj->nodesetval);
-	//char *content = strdup(cont);
-
-	/* Cleanup */
-	xmlXPathFreeObject(xpathObj);
-	xmlXPathFreeContext(xpathCtx); 
-	xmlFreeDoc(doc); 
-
-	return size;
-}
-
-
-int *size_xpath_nodes(xmlNodeSetPtr nodes) {
-	int size;
-
-	size = (nodes) ? nodes->nodeNr : 0;
-
-	return size;
+	xmlNewTextChild (xpathObj->nodesetval->nodeTab[0], NULL, name, content);
+	xmlXPathFreeObject(xpathObj);                                 
+	xmlXPathFreeContext(xpathCtx);
+	xmlSaveFormatFile (filename, doc, 1);
+	xmlFreeDoc(doc);
 }
