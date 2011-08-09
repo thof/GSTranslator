@@ -106,6 +106,7 @@ int main (int argc, char *argv[])
 	Widgets *widgets;
 	GtkTextBuffer *buffer_src, *buffer_dest;
 	GdkPixbuf *pixbuffer;
+	GError *error=NULL;
 	if(!g_thread_supported())
 	{
 		g_thread_init( NULL );
@@ -125,13 +126,21 @@ int main (int argc, char *argv[])
 		gtk_builder_add_from_file (builder, 
 		                           PACKAGE_DATA_DIR"/gstranslator/ui/gstranslator.ui", 
 		                           NULL);
-		pixbuffer = gdk_pixbuf_new_from_file(PACKAGE_DATA_DIR"/icons/hicolor/128x128/apps/gstranslator.png",
-		                                     NULL);
+		pixbuffer = gdk_pixbuf_new_from_file (PACKAGE_DATA_DIR"/icons/hicolor/64x64/apps/gstranslator.png",
+		                                     &error);
+		if(error!=NULL)
+		{
+			g_print ("Icon error -> %s", error->message);
+		}
 	}
 	else
 	{
 		gtk_builder_add_from_file (builder, "src/gstranslator.ui", NULL);
-		pixbuffer = gdk_pixbuf_new_from_file("src/icon/128x128/gstranslator.png", NULL);
+		pixbuffer = gdk_pixbuf_new_from_file("src/icon/128x128/gstranslator.png", &error);
+		if(error!=NULL)
+		{
+			g_print ("Icon error -> %s", error->message);
+		}
 	}
 
 	widgets = g_slice_new (Widgets);

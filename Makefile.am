@@ -1,10 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 ## Created by Anjuta
 
-AM_CPPFLAGS = \
-        -DPACKAGE_DATA_DIR=\""/usr"\"
-
-SUBDIRS = src 
+SUBDIRS = src
 
 gstranslatordocdir = ${prefix}/doc/gstranslator
 gstranslatordoc_DATA = \
