@@ -1,8 +1,7 @@
 [Desktop Entry]
-Encoding=UTF-8
 Name=GSTranslator
 Comment=Simple translator
 Exec=gstranslator
 Icon=gstranslator
 Type=Application
-Categories=Application;Education;Dictionary;Languages;GNOME
+Categories=Education;Languages;GNOME;GTK;
