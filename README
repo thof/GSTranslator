@@ -1,4 +1,4 @@
-GSTranslator 0.2a1 - is a simple translator for Gnome 3.
+GSTranslator 0.3.1 - is a simple translator for Gnome 3.
 ==================
 
 DESCRIPTION
@@ -23,7 +23,6 @@ DEPENDENCIES
 - glibc
 - gtk3
 - json-glib
-- keybinder-3.0 (NOTE: it has to be version 3.0 for gtk3)
 - libnotify
 - libxml2
 - curl
