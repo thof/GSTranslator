@@ -7,3 +7,8 @@ GSTranslator 0.3 (released 8-Aug-2011)
 - KDE4: fixed bugs that caused segfault in KDE4. Since this version GSTranslator works with KDE4
 - Various parts of the code were cleaned up
 - Many minor changes (memory management, code etc.) that should increase stability
+
+GSTranslator 0.3.1 (released 16-Aug-2011)
+
+- Statically-linked libkeybinder
+- More intuitive way to manage favorites
