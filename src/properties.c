@@ -87,8 +87,8 @@ int size_lang, exit_code;
 char conf_file[512], log_filename[512], output_filename[512];
 language dicts[60];
 shortcuts shortcut[6];
-favorites favorite[20];
-favorites favorite_log[20];
+favorites favorite[50];
+favorites favorite_log[50];
 hidden_dicts h_dict[60];
 
 void init_favorites_list (gpointer user_data, GtkBuilder *builder);
@@ -117,6 +117,20 @@ int create_properties_window(char *conf_file_xml, int deploy, language *dictiona
 	Widgets *widgets;
 	size_lang = 60;
 	int i;
+	for (i=0; i<sizeof(favorite)/sizeof(favorite[0]); i++)
+	{
+		favorite[i].src_code = -1;
+		favorite[i].src_code = -1;
+	}
+	for (i=0; i<sizeof(favorite_log)/sizeof(favorite_log[0]); i++)
+	{
+		favorite_log[i].src_code = -1;
+		favorite_log[i].src_code = -1;
+	}
+	for (i=0; i<sizeof(h_dict)/sizeof(h_dict[0]); i++)
+	{
+		h_dict[i].code = -1;
+	}
 	for (i=0; i<size_lang; i++)
 	{
 		strcpy (dicts[i].name, dictionaries->name);
@@ -551,8 +565,9 @@ void save_config (GtkButton *button, gpointer user_data)
 	GtkTreeIter f_iter, h_iter;
 	GValue f_value = {0};
 	GValue h_value = {0};
-	char *f_src, *f_dst, *h_val;
-	int i, j;
+	gchar *f_src, *f_dst, *h_val;
+	gboolean delete_cond = FALSE, valid = TRUE; 
+	gint i, j;
 	GtkWidget *dialog;
 	Widgets *widgets = (Widgets*)user_data;
 
@@ -568,41 +583,44 @@ void save_config (GtkButton *button, gpointer user_data)
 				gtk_tree_model_get_value (widgets->store, &f_iter, 0, &f_value);
 				if(strcmp(g_value_get_string (&f_value), g_value_get_string (&h_value)) == 0)
 				{
-					dialog = gtk_message_dialog_new (widgets->window,
-					                                 GTK_DIALOG_MODAL,
-					                                 GTK_MESSAGE_ERROR,
-					                                 GTK_BUTTONS_CLOSE,
-					                                 "Both lists contain at least one the same element");
-					gtk_message_dialog_format_secondary_text (dialog, "Element \"%s\" needs to be fixed", g_value_get_string (&h_value));
-					gtk_dialog_run (GTK_DIALOG (dialog));
-					gtk_widget_destroy (dialog);
+					if(!gtk_tree_store_remove (widgets->store_hidden, &h_iter))
+					{
+						valid = FALSE;
+					}
+					delete_cond = TRUE;
 					g_value_unset(&f_value);
-					g_value_unset(&h_value);
-					return 0;
+					break;
 				}
 				g_value_unset(&f_value);
 				
 				gtk_tree_model_get_value (widgets->store, &f_iter, 1, &f_value);
 				if(strcmp(g_value_get_string (&f_value), g_value_get_string (&h_value)) == 0)
 				{
-					dialog = gtk_message_dialog_new (widgets->window,
-					                                 GTK_DIALOG_MODAL,
-					                                 GTK_MESSAGE_ERROR,
-					                                 GTK_BUTTONS_CLOSE,
-					                                 "Both lists contain at least one the same element");
-					gtk_message_dialog_format_secondary_text (dialog, "Element \"%s\" needs to be fixed", g_value_get_string (&h_value));
-					gtk_dialog_run (GTK_DIALOG (dialog));
-					gtk_widget_destroy (dialog);
+					if(!gtk_tree_store_remove (widgets->store_hidden, &h_iter))
+					{
+						valid = FALSE;
+					}
+					delete_cond = TRUE;
 					g_value_unset(&f_value);
-					g_value_unset(&h_value);
-					return 0;
+					break;
 				}
 				g_value_unset(&f_value);
 			}
 			while (gtk_tree_model_iter_next (widgets->store, &f_iter));
 			g_value_unset(&h_value);
+			if(delete_cond)
+			{
+				delete_cond = FALSE;
+			}
+			else
+			{
+				if(!gtk_tree_model_iter_next (widgets->store_hidden, &h_iter))
+				{
+					valid = FALSE;
+				}
+			}
 		}
-		while (gtk_tree_model_iter_next (widgets->store_hidden, &h_iter));
+		while (valid);
 	}
 	
 	if(gtk_tree_model_get_iter_first (widgets->store, &f_iter))
@@ -632,19 +650,20 @@ void save_config (GtkButton *button, gpointer user_data)
 				}
 			}
 			g_value_unset(&f_value);
+			//g_print ("\n%s -> %s", *f_src, *f_dst);
 			j++;
 		}
 		while(gtk_tree_model_iter_next (widgets->store, &f_iter));
 	}
 
-	/*for(i=0; i<20; i++)
+	for(i=0; i<sizeof(favorite)/sizeof(favorite[0]); i++)
 	{
-		if(favorite[i].src_code == NULL)
+		if(favorite[i].src_code == -1)
 		{
 			break;
 		}
-		//g_print("\n%d %d", favorite[i].src_code, favorite[i].dst_code);
-	}*/
+		g_print("\n%d %d", favorite[i].src_code, favorite[i].dst_code);
+	}
 
 	if(gtk_tree_model_get_iter_first (widgets->store_hidden, &h_iter))
 	{
@@ -667,14 +686,14 @@ void save_config (GtkButton *button, gpointer user_data)
 		while(gtk_tree_model_iter_next (widgets->store_hidden, &h_iter));
 	}
 
-	/*for(i=0; i<60; i++)
+	for(i=0; i<sizeof(h_dict)/sizeof(h_dict[0]); i++)
 	{
-		if(h_dict[i].code == NULL)
+		if(h_dict[i].code == -1)
 		{
 			break;
 		}
-		//g_print("\n%d", h_dict[i].code);
-	}*/
+		g_print("\n%d", h_dict[i].code);
+	}
 
 	strcpy (shortcut[0].name, gtk_entry_get_text (widgets->entry_sn));
 	strcpy (shortcut[1].name, gtk_entry_get_text (widgets->entry_wn));

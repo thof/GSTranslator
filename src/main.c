@@ -21,6 +21,7 @@
 #include "xml_parser.h"
 #include "properties.h"
 #include "data_logger.h"
+#include "keybinder.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,7 +29,6 @@
 
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
-#include <keybinder.h>
 #include <libnotify/notify.h>
 #include <glib.h>
 

@@ -64,7 +64,7 @@ void print_phrases ()
 	int i;
 	for(i=0; i<current_index; i++)
 	{
-		if(phrases[i].src==NULL)
+		if(phrases[i].orig==NULL)
 		{
 			return;
 		}
@@ -193,7 +193,7 @@ void save_phrases_to_file ()
 }
 
 
-int convert_to_anki (char *file_in, char *file_out, favorites * favorite_log)
+int convert_to_anki (char *file_in, char *file_out, favorites *favorite_log)
 {
 	xmlDocPtr doc;
 	xmlNodePtr node_p, child, child_p, next_p, temp;
@@ -268,7 +268,7 @@ int convert_to_anki (char *file_in, char *file_out, favorites * favorite_log)
 			}
 			favorite_log++;
 		}
-		while(favorite_log->src_code != NULL);
+		while(favorite_log->src_code != -1);
 		favorite_log = fav_temp;
 	}
 	while(node_p=(node_p->next));

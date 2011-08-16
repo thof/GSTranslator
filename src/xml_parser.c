@@ -179,7 +179,7 @@ void save_config_file (const char* filename, shortcuts * shortcut,
 		xmlNewTextChild (parent, NULL, "dst_lang", temp_val);
 		favorite++;
 	}
-	while(favorite->src_code != NULL);
+	while(favorite->src_code != -1);
 	// add hidden elements
 	do
 	{
@@ -187,7 +187,7 @@ void save_config_file (const char* filename, shortcuts * shortcut,
 		parent = xmlNewTextChild (xpathObj->nodesetval->nodeTab[0], NULL, "hidden", temp_val);
 		h_dict++;
 	}
-	while(h_dict->code != NULL);
+	while(h_dict->code != -1);
 	xmlXPathFreeObject(xpathObj);
 
 	xmlXPathFreeContext(xpathCtx);
