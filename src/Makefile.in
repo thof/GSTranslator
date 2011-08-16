@@ -52,7 +52,7 @@ am_gstranslator_OBJECTS = gstranslator-main.$(OBJEXT) \
 	gstranslator-xml_parser.$(OBJEXT) \
 	gstranslator-request.$(OBJEXT) \
 	gstranslator-properties.$(OBJEXT) \
-	gstranslator-data_logger.$(OBJEXT)
+	gstranslator-data_logger.$(OBJEXT) gstranslator-bind.$(OBJEXT)
 gstranslator_OBJECTS = $(am_gstranslator_OBJECTS)
 am__DEPENDENCIES_1 =
 gstranslator_DEPENDENCIES = $(am__DEPENDENCIES_1)
@@ -302,9 +302,15 @@ gstranslator_SOURCES = \
 	properties.c \
 	properties.h \
 	data_logger.c \
-	data_logger.h
+	data_logger.h \
+	bind.c \
+	keybinder.h
 
-gstranslator_CFLAGS = -lcurl
+gstranslator_CFLAGS = -lcurl \
+	-lX11 \
+	-lXext \
+	-lXrender
+
 gstranslator_LDFLAGS = \
 	-Wl,--export-dynamic
 
@@ -397,6 +403,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gstranslator-bind.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gstranslator-data_logger.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gstranslator-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gstranslator-properties.Po@am__quote@
@@ -506,6 +513,22 @@ gstranslator-data_logger.obj: data_logger.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='data_logger.c' object='gstranslator-data_logger.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstranslator_CFLAGS) $(CFLAGS) -c -o gstranslator-data_logger.obj `if test -f 'data_logger.c'; then $(CYGPATH_W) 'data_logger.c'; else $(CYGPATH_W) '$(srcdir)/data_logger.c'; fi`
+
+gstranslator-bind.o: bind.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstranslator_CFLAGS) $(CFLAGS) -MT gstranslator-bind.o -MD -MP -MF $(DEPDIR)/gstranslator-bind.Tpo -c -o gstranslator-bind.o `test -f 'bind.c' || echo '$(srcdir)/'`bind.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gstranslator-bind.Tpo $(DEPDIR)/gstranslator-bind.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='bind.c' object='gstranslator-bind.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstranslator_CFLAGS) $(CFLAGS) -c -o gstranslator-bind.o `test -f 'bind.c' || echo '$(srcdir)/'`bind.c
+
+gstranslator-bind.obj: bind.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstranslator_CFLAGS) $(CFLAGS) -MT gstranslator-bind.obj -MD -MP -MF $(DEPDIR)/gstranslator-bind.Tpo -c -o gstranslator-bind.obj `if test -f 'bind.c'; then $(CYGPATH_W) 'bind.c'; else $(CYGPATH_W) '$(srcdir)/bind.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gstranslator-bind.Tpo $(DEPDIR)/gstranslator-bind.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='bind.c' object='gstranslator-bind.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gstranslator_CFLAGS) $(CFLAGS) -c -o gstranslator-bind.obj `if test -f 'bind.c'; then $(CYGPATH_W) 'bind.c'; else $(CYGPATH_W) '$(srcdir)/bind.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo

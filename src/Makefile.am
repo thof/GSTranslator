@@ -33,9 +33,14 @@ gstranslator_SOURCES = \
 	properties.c \
 	properties.h \
 	data_logger.c \
-	data_logger.h
+	data_logger.h \
+	bind.c \
+	keybinder.h
 
-gstranslator_CFLAGS = -lcurl
+gstranslator_CFLAGS = -lcurl \
+	-lX11 \
+	-lXext \
+	-lXrender
 
 gstranslator_LDFLAGS = \
 	-Wl,--export-dynamic
