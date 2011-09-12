@@ -159,7 +159,6 @@ void save_phrases_to_file ()
 			return;
 		}
 
-		// add keyboard shortcuts
 		xpathObj = xmlXPathEvalExpression("/phrases", xpathCtx);
 		if(xpathObj == NULL) 
 		{
@@ -258,12 +257,20 @@ int convert_to_anki (char *file_in, char *file_out, favorites *favorite_log)
 			dst = atoi (xmlNodeGetContent (child_p->prev));
 			if(src==favorite_log->src_code && dst==favorite_log->dst_code)
 			{
-				strcpy (body_temp, xmlNodeGetContent (child_p->next->next));
-				strcpy (body_temp, replace_char (&body_temp, '\n', "</br>", strlen(body_temp)));
-				sprintf (phrases_out + strlen (phrases_out), "\n%s\t<b>%s</b></br></br><font size=\"2\">%s</font>",
-				         xmlNodeGetContent (child_p), xmlNodeGetContent (child_p->next),
-				         body_temp);
-				//g_print(phrases_out);
+				if(strcmp(xmlNodeGetContent (child_p->next->next), "")==0)
+				{
+					sprintf (phrases_out + strlen (phrases_out), "\n%s\t<b>%s</b>",
+					         xmlNodeGetContent (child_p), xmlNodeGetContent (child_p->next));
+				}
+				else
+				{
+					strcpy (body_temp, xmlNodeGetContent (child_p->next->next));
+					strcpy (body_temp, replace_char (&body_temp, '\n', "<br>", strlen(body_temp)));
+					sprintf (phrases_out + strlen (phrases_out), "\n%s\t<b>%s</b><br><br><font size=\"2\">%s</font>",
+					         xmlNodeGetContent (child_p), xmlNodeGetContent (child_p->next),
+					         body_temp);
+					//g_print(phrases_out);
+				}
 				break;
 			}
 			favorite_log++;

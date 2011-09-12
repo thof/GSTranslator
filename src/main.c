@@ -113,8 +113,8 @@ int main (int argc, char *argv[])
 	}
     gdk_threads_init();
     gdk_threads_enter();
-	
-	deploy = 1;
+
+	deploy = 0;
 	gtk_init (&argc, &argv);
 	recent_clip[0] = '\0';
 	close_notify = 1;
