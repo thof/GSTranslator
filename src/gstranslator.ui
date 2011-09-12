@@ -8,7 +8,7 @@
     <property name="accept_focus">False</property>
     <property name="focus_on_map">False</property>
     <property name="program_name">GSTranslator</property>
-    <property name="version">0.3.1</property>
+    <property name="version">0.3.2</property>
     <property name="comments" translatable="yes">Simple translator for Gnome 3</property>
     <property name="website">https://github.com/thof/GSTranslator</property>
     <property name="website_label" translatable="yes">github</property>

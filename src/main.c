@@ -53,14 +53,14 @@ typedef struct
 
 
 GtkComboBoxText *cb_source_lang, *cb_dest_lang;
-NotifyNotification *notify_open, *notify_test;
+NotifyNotification *notify_open;
 gchar *translated_text, *summary;
 gchar *favorite_key, *favorite_key_backward, *normal_notify_key, *wide_notify_key;
 gint lang_src, lang_dst, close_notify, favorite_index, favorite_size, deploy, temp;
 gint *w_width, *w_height, *w_x, *w_y, paned_pos, trans_method;
 gint fav_src[32], fav_dst[32];
 gint sizeof_dicts = 60;
-gchar recent_clip[4096], conf_file[512];
+gchar recent_clip[4096], conf_file[512], icon_file[256];
 size_t src_length;
 language dictionaries[60];
 gint successor[60];
@@ -296,8 +296,10 @@ int translate_normal_notify (GtkClipboard *clipboard,
 	{
 		//g_print("\n%s*", received_text);
 		translate_from_clipboard (received_text);
-		notify_notification_update (notify_open, summary, translated_text, NULL);
-		notify_notification_show (notify_open, NULL);
+		if(notify_notification_update (notify_open, summary, translated_text, icon_file))
+		{
+			notify_notification_show (notify_open, NULL);
+		}
 		g_free (summary);
 		g_free (translated_text);
 	}
@@ -323,8 +325,10 @@ int translate_wide_notify (GtkClipboard *clipboard,
 	else
 	{
 		translate_from_clipboard (received_text);
-		notify_notification_update (notify_open, summary, translated_text, NULL);
-		notify_notification_show(notify_open, NULL);
+		if(notify_notification_update (notify_open, summary, translated_text, icon_file))
+		{
+			notify_notification_show (notify_open, NULL);
+		}		
 		close_notify = 0;
 		g_free (summary);
 		g_free (translated_text);
@@ -493,22 +497,22 @@ void change_src_lang (GtkWidget *widget, gpointer data)
 void change_dst_lang (GtkWidget *widget, gpointer data)
 {
 	GdkPixbuf *pixbuffer;
+	NotifyNotificationPrivate *priv = notify_open->priv;
 	temp = gtk_combo_box_get_active (widget);
 	//g_print ("\nactive dst = %d", gtk_combo_box_get_active (widget));
 	lang_dst = temp+successor[temp];
-	char icon_file[256];
 	if(deploy)
 	{
 		sprintf (icon_file, "%s/gstranslator/kbflags/%s", PACKAGE_DATA_DIR, dictionaries[lang_dst].flag);
-		pixbuffer = gdk_pixbuf_new_from_file(icon_file, NULL);
+		//pixbuffer = gdk_pixbuf_new_from_file(icon_file, NULL);
 	}
 	else
 	{
-		sprintf (icon_file, "src/kbflags/%s", dictionaries[lang_dst].flag);
-		pixbuffer = gdk_pixbuf_new_from_file(icon_file, NULL);
+		sprintf (icon_file, "%s/src/kbflags/%s", g_get_current_dir(), dictionaries[lang_dst].flag);
+		//pixbuffer = gdk_pixbuf_new_from_file(icon_file, NULL);
 	}
-	notify_notification_set_image_from_pixbuf(notify_open, pixbuffer);
-	g_object_unref (pixbuffer);
+	//notify_notification_set_image_from_pixbuf2(notify_open, pixbuffer);
+	//g_object_unref (pixbuffer);
 }
 
 
@@ -740,7 +744,7 @@ void change_favorite (gpointer user_data)
 {
 	GdkPixbuf *pixbuffer;
 	char message[128];
-	char icon_file[256];
+	//char icon_file[256];
 	Widgets *widgets = (Widgets*)user_data;
 	GError *err = NULL;
 
@@ -757,19 +761,19 @@ void change_favorite (gpointer user_data)
 	if(deploy)
 	{
 		sprintf (icon_file, "%s/gstranslator/kbflags/%s", PACKAGE_DATA_DIR, dictionaries[lang_dst].flag);
-		pixbuffer = gdk_pixbuf_new_from_file(icon_file, err);
+		//pixbuffer = gdk_pixbuf_new_from_file (icon_file, err);
 	}
 	else
 	{
-		sprintf (icon_file, "src/kbflags/%s", dictionaries[lang_dst].flag);
-		pixbuffer = gdk_pixbuf_new_from_file(icon_file, err);
+		sprintf (icon_file, "%s/src/kbflags/%s", g_get_current_dir(), dictionaries[lang_dst].flag);
+		//pixbuffer = gdk_pixbuf_new_from_file (icon_file, err);
 	}
 	if (err != NULL)
 	{
 		g_print (stderr, "Unable to read file: %s\n", err->message);
 		g_error_free (err);
 	}
-	notify_notification_set_image_from_pixbuf(notify_open, pixbuffer);
+	//notify_notification_set_image_from_pixbuf(notify_open, pixbuffer);
 	
 	if(!close_notify)
 	{
@@ -779,10 +783,12 @@ void change_favorite (gpointer user_data)
 	notify_notification_set_urgency (notify_open, NOTIFY_URGENCY_NORMAL);
 	//g_print("\n%d %d", lang_src, lang_dst);
 	sprintf (message, "%s -> %s", dictionaries[lang_src].name, dictionaries[lang_dst].name);
-	notify_notification_update(notify_open, message, "", NULL);
-	notify_notification_show (notify_open, NULL);
+	if(notify_notification_update(notify_open, message, "", icon_file))
+	{
+		notify_notification_show (notify_open, NULL);
+	}
 	recent_clip[0] = "\0";
-	g_object_unref (pixbuffer);
+	//g_object_unref (pixbuffer);
 }
 
 
@@ -806,15 +812,15 @@ void change_favorite_back (gpointer user_data)
 	if(deploy)
 	{
 		sprintf (icon_file, "%s/gstranslator/kbflags/%s", PACKAGE_DATA_DIR, dictionaries[lang_dst].flag);
-		pixbuffer = gdk_pixbuf_new_from_file(icon_file, NULL);
+		//pixbuffer = gdk_pixbuf_new_from_file(icon_file, NULL);
 	}
 	else
 	{
-		sprintf (icon_file, "src/kbflags/%s", dictionaries[lang_dst].flag);
-		pixbuffer = gdk_pixbuf_new_from_file(icon_file, NULL);
+		sprintf (icon_file, "%s/src/kbflags/%s", g_get_current_dir(), dictionaries[lang_dst].flag);
+		//pixbuffer = gdk_pixbuf_new_from_file(icon_file, NULL);
 	}
 
-	notify_notification_set_image_from_pixbuf(notify_open, pixbuffer);
+	//notify_notification_set_image_from_pixbuf(notify_open, pixbuffer);
 	if(!close_notify)
 	{
 		notify_notification_close (notify_open, NULL);
@@ -823,10 +829,12 @@ void change_favorite_back (gpointer user_data)
 	notify_notification_set_urgency (notify_open, NOTIFY_URGENCY_NORMAL);
 	//g_print("\n%d %d", lang_src, lang_dst);
 	sprintf (message, "%s -> %s", dictionaries[lang_src].name, dictionaries[lang_dst].name);
-	notify_notification_update(notify_open, message, "", NULL);
-	notify_notification_show (notify_open, NULL);
+	if(notify_notification_update(notify_open, message, "", icon_file))
+	{
+		notify_notification_show (notify_open, NULL);
+	}
 	recent_clip[0] = "\0";
-	g_object_unref (pixbuffer);
+	//g_object_unref (pixbuffer);
 }
 
 
