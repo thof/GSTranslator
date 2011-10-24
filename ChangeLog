@@ -12,3 +12,8 @@ GSTranslator 0.3.1 (released 16-Aug-2011)
 
 - Statically-linked libkeybinder
 - More intuitive way to manage favorites
+
+GSTranslator 0.3.2 (released 24-Oct-2011)
+
+ - Bug fix: large icons (flags) in Gnome 3.2
+ - Bug fix: wrong newline HTML tag in XML phrases logs
